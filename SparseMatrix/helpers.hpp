@@ -12,14 +12,13 @@ template <unsigned DIM> std::ostream &operator<<(std::ostream &output, const mat
 
     for (int i = 0; i < DIM; i++)
     {
-        output << '[';
         for (int c = 0; c < DIM; c++)
         {
             output << toWrite.get(i, c);
             if (c < DIM - 1)
-                output << ',';
+                output << ' ';
         }
-        output << "],";
+        output << "\n";
     }
 
     output << std::setfill(oldFill);
@@ -61,25 +60,9 @@ std::chrono::microseconds measure(matrix<DIM> (*func)(const matrix<DIM> &, const
                                   const matrix<DIM> &left, const matrix<DIM> &right)
 {
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 10; i++)
         volatile auto _ = func(left, right); // disable discard
     auto end = std::chrono::high_resolution_clock::now();
 
     return duration_cast<std::chrono::microseconds>(end - start);
 }
-
-template <unsigned DIM>
-void benchmark(matrix<DIM> (*func)(const matrix<DIM> &, const matrix<DIM> &), const std::string &name,
-               const matrix<DIM> &highLeft, const matrix<DIM> &highRight, const matrix<DIM> &middleLeft,
-               const matrix<DIM> &middleRight, const matrix<DIM> &lowLeft, const matrix<DIM> &lowRight)
-{
-
-    std::cout << "Benchmarking " << name << " multiplication for dimension " << DIM
-              << " with high density: " << measure(func, highLeft, highRight) << "\n";
-    std::cout << "Benchmarking " << name << " multiplication for dimension " << DIM
-              << " with middle density: " << measure(func, middleLeft, middleRight) << "\n";
-    std::cout << "Benchmarking " << name << " multiplication for dimension " << DIM
-              << " with low density: " << measure(func, lowLeft, lowRight) << "\n"
-              << std::endl;
-}
-

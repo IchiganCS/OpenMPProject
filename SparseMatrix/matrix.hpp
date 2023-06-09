@@ -2,13 +2,14 @@
 #define MATRIX
 
 #include <array>
+#include <exception>
 #include <span>
 #include <utility> //pair
 #include <vector>
 
 /// This matrix implements a compressed sparse row matrix like described in Wikipedia:
 /// https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_(CSR,_CRS_or_Yale_format)
-template <unsigned DIM> class matrix
+template <unsigned DIM> class sparseRowMatrix
 {
   private:
     /// Values are sorted for each row by their column.
@@ -25,14 +26,6 @@ template <unsigned DIM> class matrix
     std::span<const std::pair<int, unsigned>> cRowValues(unsigned row) const
     {
         return std::span(values.cbegin() + rowSeparators[row], values.cbegin() + rowSeparators[row + 1]);
-    }
-
-  public:
-    /// Initializes an empty matrix.
-    matrix()
-    {
-        for (unsigned i = 0; i < DIM + 1; i++)
-            rowSeparators[i] = 0;
     }
 
     /// Sets a value at the given coordinates to 0.
@@ -58,6 +51,14 @@ template <unsigned DIM> class matrix
             if (column > col)
                 return;
         }
+    }
+
+  public:
+    /// Initializes an empty matrix.
+    sparseRowMatrix()
+    {
+        for (unsigned i = 0; i < DIM + 1; i++)
+            rowSeparators[i] = 0;
     }
 
     /// Sets a value for a given coordinate.
@@ -116,11 +117,78 @@ template <unsigned DIM> class matrix
         return 0;
     }
 
-    /// Counts all values which are not zero.
-    size_t nonZeros() const
-    {
+    size_t nonZeros() {
         return values.size();
     }
 };
+
+
+
+
+template <unsigned DIM> class coordinateListMatrix
+{
+  private:
+
+    /// Sorted first by rows and then by columns.
+    std::vector<std::tuple<unsigned, unsigned, int>> values;
+
+
+  public:
+    int get(unsigned searchRow, unsigned searchColumn) const
+    {
+        for (auto [row, col, val] : values) {
+            if (row < searchRow || col < searchColumn)
+                continue;
+            if (col > searchColumn)
+                continue;
+            if (row == searchRow && col == searchColumn)
+                return val;
+            if (row > searchRow)
+                return 0;
+        }
+        return 0;
+    }
+
+
+    void set(unsigned setRow, unsigned setColumn, int newValue) {
+        for (int i = 0; i < values.size(); i++) {
+            auto& [row, col, val] = values[i];
+            if (row < setRow || col < setColumn)
+                continue;
+
+
+            if (row == setRow && col == setColumn) {
+                // overwrite
+
+                if (newValue == 0) {
+                    // actually delete it
+                    values.erase(values.begin() + i);
+                    return;
+                }
+
+                std::get<2>(values[i]) = newValue;
+            }
+            else {
+                // insert
+
+                if (newValue == 0)
+                    // actually dont
+                    return;
+                
+                values.insert(values.begin() + i, std::make_tuple(setRow, setColumn, newValue));                
+            }
+            return;
+        }
+
+        // if we reach this, values is empty
+        values.push_back(std::make_tuple(setRow, setColumn, newValue));
+    }
+    
+    size_t nonZeros() {
+        return values.size();
+    }
+};
+
+template <unsigned DIM> using matrix = sparseRowMatrix<DIM>;
 
 #endif

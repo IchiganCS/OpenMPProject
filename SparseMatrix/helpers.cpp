@@ -1,4 +1,5 @@
 #include "helpers.hpp"
+#include "matrix.hpp"
 #include <random>
 
 using namespace std;
@@ -48,7 +49,6 @@ bool testMatGetSet()
 
     return true;
 }
-
 
 bool testMultMethod(matrix<50> (*func)(const matrix<50> &, const matrix<50> &))
 {
