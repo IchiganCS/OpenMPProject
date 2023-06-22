@@ -1,16 +1,15 @@
 #include <iostream>
 
-#include <SDL.h>
 #include "Simulation.h"
 #include "SeqAlgorithm.h"
 
-
+#include <SDL.h>
 
 
 
 int main(int argc, char** argv) {
-    SDL_Init(0);
 
+    SDL_Init(0);
 
     std::cout << "Running" << std::endl;
     Simulation s(seqAlgorithm, 200);

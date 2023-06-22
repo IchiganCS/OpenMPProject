@@ -7,11 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenMP REQUIRED)
 find_package(SDL2 REQUIRED)
 
+file(GLOB sources ./*.cpp ./*.h)
+
 add_executable(main
-    main.cpp
-    Draw.cpp
-    Simulation.cpp
-    SeqAlgorithm.cpp
+    ${sources}
 )
 
 target_compile_options(main PUBLIC)
