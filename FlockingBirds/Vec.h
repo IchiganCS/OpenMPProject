@@ -3,7 +3,11 @@
 
 class Vec {
 public:
-    float X, Y;
+  float X, Y;
+  Vec() {
+    X = 0;
+    Y = 0;
+  }
 };
 
 #endif

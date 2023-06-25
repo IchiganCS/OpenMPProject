@@ -1,8 +1,6 @@
 #include "Draw.h"
 
+#include <SDL2/SDL.h>
 #include <iostream>
 
-void draw(std::vector<Bird> birds) {
-        std::cout << "Draw" << std::endl;
-    
-}
+void draw(std::vector<Bird> birds) {}
