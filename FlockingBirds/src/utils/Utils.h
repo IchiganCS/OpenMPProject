@@ -39,7 +39,6 @@ public:
   }
 
   static void incBirdsPos(std::vector<Bird> &birds) {
-    printf("Bird Data\n");
     for (Bird &b : birds) {
       b.position.X++;
       if (b.position.X > WINDOW_WIDTH) {
