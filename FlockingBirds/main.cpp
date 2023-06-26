@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   SimpleFlockingBird algo;
   std::vector<Bird> birds;
 
-  Utils::intialiseInitPostion(birds, 20);
+  Utils::intialiseInitPostion(birds, 500);
 
   std::cout << "Running" << std::endl;
   Simulation s(&algo, birds);

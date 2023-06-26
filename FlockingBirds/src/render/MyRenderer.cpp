@@ -54,8 +54,8 @@ MyRenderer::MyRenderer(std::string title) {
   int w, h;
   w = dm.w;
   h = dm.h;
-  Utils::WINDOW_HEIGHT = dm.h;
-  Utils::WINDOW_WIDTH = dm.w - 10;
+  Utils::WINDOW_HEIGHT = 0.8 * dm.h;
+  Utils::WINDOW_WIDTH = 0.8 * dm.w;
   window = SDL_CreateWindow(title.c_str(), 20, 20, Utils::WINDOW_WIDTH,
                             Utils::WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);

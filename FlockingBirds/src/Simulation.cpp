@@ -3,6 +3,7 @@
 #include "Draw.h"
 #include "src/render/MyRenderer.h"
 #include "src/utils/Utils.h"
+#include <SDL2/SDL.h>
 #include <string>
 
 int count = 0;
@@ -12,6 +13,7 @@ void Simulation::simulate() {
   while (true) {
     algo->update(Birds);
     r.update(Birds);
+    SDL_Delay(3);
     draw(Birds);
   }
 }
