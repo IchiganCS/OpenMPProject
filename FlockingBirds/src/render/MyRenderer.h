@@ -1,6 +1,6 @@
 #ifndef MYRENDERER_H
 #define MYRENDERER_H
-#include "../Bird.h"
+#include "src/Bird.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <vector>

@@ -1,5 +1,5 @@
 #include "MyRenderer.h"
-#include "utils/Utils.hpp"
+#include "src/utils/Utils.h"
 
 int SDL_RenderFillCircle(SDL_Renderer *renderer, int x, int y, int radius) {
   int offsetx, offsety, d;

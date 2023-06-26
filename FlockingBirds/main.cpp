@@ -1,13 +1,9 @@
+#include "src/SimpleFlockingBird/SimpleFlockingBird.h"
+#include "src/Simulation.h"
+#include "src/utils/Utils.h"
 #include <iostream>
 
-#include "SeqAlgorithm.h"
-#include "Simulation.h"
-#include "utils/Utils.hpp"
-
 #include <SDL.h>
-
-int Utils::WINDOW_HEIGHT = 640;
-int Utils::WINDOW_WIDTH = 400;
 
 int main(int argc, char **argv) {
 
@@ -16,9 +12,13 @@ int main(int argc, char **argv) {
   } else {
     std::cout << "SDL video system is ready to go\n";
   }
+  SimpleFlockingBird algo;
+  std::vector<Bird> birds;
+
+  Utils::intialiseInitPostion(birds, 20);
 
   std::cout << "Running" << std::endl;
-  Simulation s(seqAlgorithm, 5);
+  Simulation s(&algo, birds);
   s.simulate();
 
   SDL_Quit();

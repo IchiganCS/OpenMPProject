@@ -7,14 +7,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenMP REQUIRED)
 find_package(SDL2 REQUIRED)
 
-file(GLOB sources ./*.cpp ./*.h)
-file(GLOB render render/*.cpp render/*.h)
-file(GLOB utils utils/*.cpp utils/*.h utils/*.hpp)
+file(GLOB_RECURSE sources 
+src/*.cpp 
+src/SimpleFlockingBird/*.cpp 
+src/render/*.cpp )
 
 add_executable(main
-    ${sources}
-    ${render}
-    ${utils}
+    main.cpp ${sources}
 )
 
 target_compile_options(main PUBLIC)

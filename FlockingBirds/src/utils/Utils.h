@@ -1,11 +1,13 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "Bird.h"
+#include "src/Bird.h"
+
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
 #include <vector>
+
 class Utils {
 public:
   static int WINDOW_WIDTH;
@@ -33,6 +35,20 @@ public:
     printf("Bird Data\n");
     for (Bird b : birds) {
       b.print();
+    }
+  }
+
+  static void incBirdsPos(std::vector<Bird> &birds) {
+    printf("Bird Data\n");
+    for (Bird &b : birds) {
+      b.position.X++;
+      if (b.position.X > WINDOW_WIDTH) {
+        b.position.X = getRandomNum(0, WINDOW_WIDTH);
+      }
+      b.position.Y++;
+      if (b.position.Y > WINDOW_HEIGHT) {
+        b.position.Y = getRandomNum(0, WINDOW_HEIGHT);
+      }
     }
   }
 };

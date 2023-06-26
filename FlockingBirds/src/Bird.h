@@ -1,7 +1,7 @@
 #ifndef BIRD_H
 #define BIRD_H
 
-#include "Vec.h"
+#include "src/Vec.h"
 #include <stdio.h>
 
 class Bird {
