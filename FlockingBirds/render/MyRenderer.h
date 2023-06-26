@@ -11,7 +11,7 @@ private:
   SDL_Renderer *renderer = nullptr;
 
 public:
-  MyRenderer(std::string &title);
+  MyRenderer(std::string title);
   ~MyRenderer();
   void update(std::vector<Bird> &birds);
 };

@@ -6,13 +6,14 @@
 #include <sys/time.h>
 #include <time.h>
 #include <vector>
-
 class Utils {
 public:
+  static int WINDOW_WIDTH;
+  static int WINDOW_HEIGHT;
+
   static int getRandomNum(int min, int max) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    printf("%d\n", tv.tv_usec);
     srand(tv.tv_usec);
     return (rand() % max + min);
   }
@@ -22,8 +23,8 @@ public:
       Bird b;
       b.angle = getRandomNum(0, 360);
       Vec &pos = b.position;
-      b.position.X = getRandomNum(0, 100);
-      b.position.Y = getRandomNum(0, 100);
+      b.position.X = getRandomNum(0, WINDOW_WIDTH);
+      b.position.Y = getRandomNum(0, WINDOW_HEIGHT);
       birds.push_back(b);
     }
   }

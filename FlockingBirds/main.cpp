@@ -2,8 +2,12 @@
 
 #include "SeqAlgorithm.h"
 #include "Simulation.h"
+#include "utils/Utils.hpp"
 
 #include <SDL.h>
+
+int Utils::WINDOW_HEIGHT = 640;
+int Utils::WINDOW_WIDTH = 400;
 
 int main(int argc, char **argv) {
 
