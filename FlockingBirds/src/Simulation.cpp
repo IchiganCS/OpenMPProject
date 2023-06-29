@@ -13,7 +13,7 @@ void Simulation::simulate() {
   while (true) {
     algo->update(Birds);
     r.update(Birds);
-    SDL_Delay(3);
+    SDL_Delay(30);
     draw(Birds);
   }
 }

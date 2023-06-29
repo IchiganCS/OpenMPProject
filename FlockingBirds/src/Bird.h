@@ -7,6 +7,7 @@
 class Bird {
 public:
   Vec position;
+  Vec velocity;
   float angle;
 
   Bird() {

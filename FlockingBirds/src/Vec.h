@@ -15,8 +15,8 @@ public:
 
   inline Vec getNormalisedVec() {
     Vec v;
-    v.X = X / length();
-    v.Y = Y / length();
+    v.X = X / (length() == 0 ? 1 : length());
+    v.Y = Y / (length() == 0 ? 1 : length());
     return v;
   }
 

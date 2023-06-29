@@ -45,17 +45,7 @@ int SDL_RenderFillCircle(SDL_Renderer *renderer, int x, int y, int radius) {
 }
 
 MyRenderer::MyRenderer(std::string title) {
-  SDL_DisplayMode dm;
 
-  if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
-    SDL_Log("SDL_GetDesktopDisplayMode failed: %s", SDL_GetError());
-  }
-
-  int w, h;
-  w = dm.w;
-  h = dm.h;
-  Utils::WINDOW_HEIGHT = 0.8 * dm.h;
-  Utils::WINDOW_WIDTH = 0.8 * dm.w;
   window = SDL_CreateWindow(title.c_str(), 20, 20, Utils::WINDOW_WIDTH,
                             Utils::WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -76,7 +66,7 @@ void MyRenderer::update(std::vector<Bird> &birds) {
   }
 
   SDL_RenderPresent(renderer);
-
+  // SDL_Delay(300);
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     switch (event.type) {

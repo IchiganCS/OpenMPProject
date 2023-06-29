@@ -12,10 +12,21 @@ int main(int argc, char **argv) {
   } else {
     std::cout << "SDL video system is ready to go\n";
   }
+  SDL_DisplayMode dm;
+
+  if (SDL_GetDesktopDisplayMode(0, &dm) != 0) {
+    SDL_Log("SDL_GetDesktopDisplayMode failed: %s", SDL_GetError());
+  }
+
+  int w, h;
+  w = dm.w;
+  h = dm.h;
+  Utils::WINDOW_HEIGHT = 0.8 * dm.h;
+  Utils::WINDOW_WIDTH = 0.8 * dm.w;
   SimpleFlockingBird algo;
   std::vector<Bird> birds;
 
-  Utils::intialiseInitPostion(birds, 500);
+  Utils::intialiseInitPostion(birds, 50);
 
   std::cout << "Running" << std::endl;
   Simulation s(&algo, birds);

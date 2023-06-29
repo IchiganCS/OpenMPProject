@@ -25,8 +25,10 @@ public:
       Bird b;
       b.angle = getRandomNum(0, 360);
       Vec &pos = b.position;
-      b.position.X = getRandomNum(0, WINDOW_WIDTH);
-      b.position.Y = getRandomNum(0, WINDOW_HEIGHT);
+      b.position.X = WINDOW_WIDTH / 2;  // getRandomNum(0, WINDOW_WIDTH);
+      b.position.Y = WINDOW_HEIGHT / 2; // getRandomNum(0, WINDOW_HEIGHT);
+      b.velocity.X = 1;                 // getRandomNum(-3, 3);
+      b.velocity.Y = 1;                 // getRandomNum(-3, 3);
       birds.push_back(b);
     }
   }
