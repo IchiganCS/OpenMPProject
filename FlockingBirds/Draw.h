@@ -4,6 +4,7 @@
 #include "Bird.h"
 #include <vector>
 
-void draw(std::vector<Bird> birds);
+void init();
+void draw(const std::vector<Bird>& birds);
 
 #endif

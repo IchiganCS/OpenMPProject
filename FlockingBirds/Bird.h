@@ -5,6 +5,7 @@
 #include "Vec.h"
 
 class Bird {
+    public:
     Vec position;
     float angle;
 };
