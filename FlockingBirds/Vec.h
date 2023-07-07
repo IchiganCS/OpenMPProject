@@ -17,7 +17,7 @@ class Vec
     bool operator==(const Vec& other) const = default;
     Vec operator-(const Vec& other) const;
     Vec operator+(const Vec& other) const;
-    Vec operator+=(const Vec& other);
+    Vec& operator+=(const Vec& other);
 };
 
 #endif

@@ -7,7 +7,6 @@
 #include <random>
 
 #include "ParAlgorithm.h"
-#include "SeqAlgorithm.h"
 #include "Simulation.h"
 
 #include "Draw.h"
@@ -15,16 +14,18 @@
 int main(int argc, char** argv)
 {
 
-    init();
+    const int size = 1500;
+    initDrawing(size);
 
     std::vector<Bird> birds;
 
+
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_real_distribution<> pos(0, 800);
+    std::uniform_real_distribution<> pos(0, size);
     std::uniform_real_distribution<> angle(0, 2 * 3.141);
 
-    for (int i = 0; i < 200; i++)
+    for (int i = 0; i < 2000; i++)
     {
         Bird bird;
         bird.position.x = pos(rng);
@@ -33,9 +34,7 @@ int main(int argc, char** argv)
         birds.push_back(bird);
     }
 
-    ParAlgorithm par(birds, 800, 800, 100, 5, 5);
-
-    draw(par.update(0.0f));
+    ParAlgorithm par(birds, size, size, 100, 5, .1f);
 
     SDL_Event e;
     bool quit = false;
@@ -47,8 +46,10 @@ int main(int argc, char** argv)
                 quit = true;
         }
         SDL_Delay(100);
-        draw(par.update(0.0f));
+        par.update(0.0f);
+        drawParallel(par.drawingInformation());
     }
 
+    SDL_Quit();
     return 0;
 }

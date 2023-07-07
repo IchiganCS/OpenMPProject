@@ -34,7 +34,7 @@ Vec Vec::operator+(const Vec& other) const
     return res;
 }
 
-Vec Vec::operator+=(const Vec& other)
+Vec& Vec::operator+=(const Vec& other)
 {
     x += other.x;
     y += other.y;
