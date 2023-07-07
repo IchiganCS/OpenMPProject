@@ -5,6 +5,10 @@
 #include <vector>
 
 
-using Algorithm = void (*)(std::vector<Bird>);
+class Algorithm {
+    public:
+    virtual ~Algorithm() = default;
+    virtual const std::vector<Bird>& update(float delta) = 0;
+};
 
 #endif

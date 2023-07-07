@@ -45,23 +45,23 @@ void draw(const vector<Bird>& birds)
             switch (vertCount)
             {
             case 0:
-                position.X += birdSize / 2 * cos(bird.angle);
-                position.Y += birdSize / 2 * sin(bird.angle);
+                position.x += birdSize / 2 * cos(bird.angle);
+                position.y += birdSize / 2 * sin(bird.angle);
                 break;
             case 1: {
                 float aimAngle = bird.angle + 3.141592 - birdSharpness / 2;
-                position.X += birdSize / 2 * cos(aimAngle);
-                position.Y += birdSize / 2 * sin(aimAngle);
+                position.x += birdSize / 2 * cos(aimAngle);
+                position.y += birdSize / 2 * sin(aimAngle);
                 break;
             }
             case 2: {
                 float aimAngle = bird.angle + 3.141592 + birdSharpness / 2;
-                position.X += birdSize / 2 * cos(aimAngle);
-                position.Y += birdSize / 2 * sin(aimAngle);
+                position.x += birdSize / 2 * cos(aimAngle);
+                position.y += birdSize / 2 * sin(aimAngle);
                 break;
             }
             }
-            vertices[birdCount * 3 + vertCount] = {{position.X, position.Y}, birdColor};
+            vertices[birdCount * 3 + vertCount] = {{position.x, position.y}, birdColor};
         }
     }
 

@@ -3,14 +3,14 @@
 #include "Draw.h"
 
 void Simulation::simulate() {
-    while (true) {
-        Algo(Birds);
+  while (true) {
+    Birds = Algo->update(0.05f);
 
-        draw(Birds);
-    }
+    draw(Birds);
+  }
 }
 
-Simulation::Simulation(Algorithm a, int count) {
-    Algo = a;
-    Birds.reserve(count);
+Simulation::Simulation(std::unique_ptr<Algorithm> &&a, int count) {
+  Algo = std::move(a);
+  Birds.reserve(count);
 }
