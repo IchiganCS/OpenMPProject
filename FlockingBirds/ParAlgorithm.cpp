@@ -37,11 +37,17 @@ void ParAlgorithm::generateGoal(int i)
 {
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_real_distribution<> widthGen(width / 5.0f * 0, width / 5.0f * 5);
-    std::uniform_real_distribution<> heightGen(height / 5.0f * 0, height / 5.0f * 5);
+    std::uniform_real_distribution<> widthGen(width / 5.0f * 1, width / 5.0f * 3);
+    std::uniform_real_distribution<> heightGen(height / 5.0f * 1, height / 5.0f * 3);
 
     leaders[i].second.x = widthGen(rng);
     leaders[i].second.y = heightGen(rng);
+
+    for (auto& obs : obstacles)
+        if (obs.distanceTo(leaders[i].second) < 50) {
+            generateGoal(i);
+            return;
+        }
 }
 
 void ParAlgorithm::repartition()
