@@ -2,6 +2,8 @@
 #define FLOCKINGBIR_H
 #include "Algorithm.h"
 #include "Bird.h"
+#include "Obstacle.h"
+#include <map>
 #include <memory>
 #include <tuple>
 #include <vector>
@@ -26,28 +28,20 @@ class ParAlgorithm : public Algorithm
     /// The bird is assumed to be already removed from any previous partition.
     void reassignPartition(Bird*);
 
-    /// Applies the forces stored in each bird ot themselves and 
-    /// corrects the partitioning if necessary.
-    void applyAllForces();
-
     /// A vector of partitions.
     /// Each partition stores a vector of pointer to birds (pointer into the "birds" vector) as well as a minimal x and
     /// a maximal x for which it is responsible.
     std::vector<std::tuple<std::vector<Bird*>, float, float>> partitions;
 
-    /// Holds all birds. Each modification to the vector itself has to be done carefully:
-    /// There are numerous pointer into the vector and each operation which reallocates or shuffles the elements
-    /// invalidates all pointers.
+    /// Holds all birds. The vector itself may not be modified, only the content.
     std::vector<Bird> birds;
 
-    /// Stores the leader bird - it is a pointer into the birds vector.
-    Bird* leader;
+    std::vector<Obstacle> obstacles;
 
-    /// The current goal of the leader bird.
-    Vec leaderGoal;
+    std::vector<std::pair<Bird*, Vec>> leaders;
 
     /// Generates a new goal for the leader.
-    void generateGoal();
+    void generateGoal(int i);
 
     /// Calculates the neighbors of a given bird and optimizes the search by checking if there could be a match for a
     /// given partition. If not, the partition and all its birds are skipped. The returned vector does not include the
@@ -61,12 +55,18 @@ class ParAlgorithm : public Algorithm
     /// The birds will be copied into a private field.
     /// PartitionOverloadTolerance is a value in percent, e.g. 0.1f means that each partition may hold up
     /// to 10% more birds than what is optimal.
-    ParAlgorithm(const std::vector<Bird>& initialBirds, int width, int height, float visionRadius, int partitionCount,
-                 float partitionOverloadTolerance);
+    ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount, int width, int height, float visionRadius,
+                 int partitionCount, float partitionOverloadTolerance);
 
-    /// Returns information useful for drawing.
-    /// In order: all birds, partition lines, goal, leader bird
-    std::tuple<std::vector<Bird>, std::vector<float>, Vec, Bird> drawingInformation();
+    
+    struct DrawingInformation {
+      const std::vector<Bird>* birds;
+      std::vector<float> partitions;
+      std::vector<Bird> leaders;
+      std::vector<Vec> goals;
+      const std::vector<Obstacle>* obstacles;
+    };
+    DrawingInformation drawingInformation() const;
 
     virtual ~ParAlgorithm() = default;
     virtual const std::vector<Bird>& update(float delta);

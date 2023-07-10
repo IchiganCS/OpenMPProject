@@ -1,10 +1,16 @@
 #include "Draw.h"
+#include "Obstacle.h"
 
 #include <SDL.h>
 #include <SDL_pixels.h>
+#include <SDL_render.h>
 #include <SDL_surface.h>
 #include <SDL_video.h>
+#include <cmath>
 #include <iostream>
+#include <numbers>
+#include <type_traits>
+#include <vector>
 
 using namespace std;
 
@@ -20,7 +26,8 @@ void initDrawing(int size)
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
-static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdColor)
+// Builds a triangle for each bird and renders it.
+static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdColor, bool drawWithAngle = false)
 {
     if (birds.size() == 0)
         return;
@@ -34,29 +41,49 @@ static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdCo
         for (int vertCount = 0; vertCount < 3; vertCount++)
         {
             // displace birdPosition
+            // if the bird should be angled:
             // vertCount = 0 forward pointing
             // vertCount = 1, 2 point backward, 1 left, 2 right
-            // such that a triangle is built
             Vec position = bird.position;
-            switch (vertCount)
-            {
-            case 0:
-                position.x += birdSize / 2 * cos(bird.angle);
-                position.y += birdSize / 2 * sin(bird.angle);
-                break;
-            case 1: {
-                float aimAngle = bird.angle + 3.141592 - birdSharpness / 2;
-                position.x += birdSize / 2 * cos(aimAngle);
-                position.y += birdSize / 2 * sin(aimAngle);
-                break;
-            }
-            case 2: {
-                float aimAngle = bird.angle + 3.141592 + birdSharpness / 2;
-                position.x += birdSize / 2 * cos(aimAngle);
-                position.y += birdSize / 2 * sin(aimAngle);
-                break;
-            }
-            }
+            if (!drawWithAngle)
+                switch (vertCount)
+                {
+                case 0:
+                    position.y += birdSize / 2;
+                    break;
+                case 1: {
+                    float aimAngle = -3.141592 / 180 * 30;
+                    position.x += birdSize / 2 * cos(aimAngle);
+                    position.y += birdSize / 2 * sin(aimAngle);
+                    break;
+                }
+                case 2: {
+                    float aimAngle = -3.141592 / 180 * 150;
+                    position.x += birdSize / 2 * cos(aimAngle);
+                    position.y += birdSize / 2 * sin(aimAngle);
+                    break;
+                }
+                }
+            else
+                switch (vertCount)
+                {
+                case 0:
+                    position.x += birdSize / 2 * cos(bird.angle);
+                    position.y += birdSize / 2 * sin(bird.angle);
+                    break;
+                case 1: {
+                    float aimAngle = bird.angle + 3.141592 - birdSharpness / 2;
+                    position.x += birdSize / 2 * cos(aimAngle);
+                    position.y += birdSize / 2 * sin(aimAngle);
+                    break;
+                }
+                case 2: {
+                    float aimAngle = bird.angle + 3.141592 + birdSharpness / 2;
+                    position.x += birdSize / 2 * cos(aimAngle);
+                    position.y += birdSize / 2 * sin(aimAngle);
+                    break;
+                }
+                }
             vertices[birdCount * 3 + vertCount] = {{position.x, position.y}, color};
         }
     }
@@ -64,9 +91,47 @@ static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdCo
     SDL_RenderGeometry(renderer, nullptr, vertices.data(), vertices.size(), nullptr, 0);
 }
 
+static void drawObstacle(const Obstacle& obstacle)
+{
+    SDL_SetRenderDrawColor(renderer, obstacleColor.r, obstacleColor.g, obstacleColor.b, obstacleColor.a);
+
+    const int resolution = 360;
+    vector<SDL_Vertex> vertices;
+    vertices.reserve(resolution + 1);
+    vertices.push_back({{obstacle.center.x, obstacle.center.y}, obstacleColor});
+    float currentAngle = 0;
+    float increment = 2 * numbers::pi / (resolution + 1);
+
+    for (int i = 0; i < resolution; i++)
+    {
+        SDL_Vertex point;
+        point.position.x = obstacle.center.x + cos(currentAngle) * obstacle.radius;
+        point.position.y = obstacle.center.y + sin(currentAngle) * obstacle.radius;
+        point.color = obstacleColor;
+        vertices.push_back(point);
+        currentAngle += increment;
+    }
+
+    vector<int> indices;
+    indices.reserve(resolution * 3);
+
+    for (int i = 0; i < resolution; i++)
+    {
+        indices.push_back(0);
+        indices.push_back(i + 1);
+        if (i + 2 >= resolution + 1)
+            indices.push_back(1);
+        else
+            indices.push_back(i + 2);
+    }
+
+    SDL_RenderGeometry(renderer, nullptr, vertices.data(), vertices.size(), indices.data(), indices.size());
+}
+
 static void drawPartitionLines(const std::vector<float>& lines)
 {
-    SDL_SetRenderDrawColor(renderer, partitionLineColor.r, partitionLineColor.g, partitionLineColor.b, partitionLineColor.a);
+    SDL_SetRenderDrawColor(renderer, partitionLineColor.r, partitionLineColor.g, partitionLineColor.b,
+                           partitionLineColor.a);
     for (auto& line : lines)
     {
         SDL_FRect goalBox;
@@ -102,18 +167,18 @@ void drawOnlyBirds(const std::vector<Bird>& birds)
     SDL_RenderPresent(renderer);
 }
 
-void drawParallel(tuple<vector<Bird>, vector<float>, Vec, Bird> args)
+void drawParallel(const ParAlgorithm::DrawingInformation& args)
 {
     SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
     SDL_RenderClear(renderer);
 
-    drawBirds(get<0>(args));
-    drawGoal(get<2>(args));
-    drawPartitionLines(get<1>(args));
-    auto leader = get<3>(args);
-    vector<Bird> leaderVec;
-    leaderVec.push_back(leader);
-    drawBirds(leaderVec, leaderColor);
+    drawBirds(*args.birds);
+    for (auto& goal : args.goals)
+        drawGoal(goal);
+    drawPartitionLines(args.partitions);
+    drawBirds(args.leaders, leaderColor);
+    for(auto& obstacle : *args.obstacles)
+        drawObstacle(obstacle);
 
     SDL_RenderPresent(renderer);
 }
