@@ -13,6 +13,7 @@
 #include "Draw.h"
 #include <omp.h>
 #include <vector>
+#include <chrono>
 
 // more leaders
 // obstacles
@@ -55,6 +56,9 @@ int main(int argc, char** argv)
         obstacles.push_back(obstacle);
     }
 
+/// mesure of the execution time 
+
+auto start = std::chrono::high_resolution_clock::now();
 
     ParAlgorithm par(birds, obstacles, 3, size, size, 100, 5, .1f);
 
@@ -71,6 +75,11 @@ int main(int argc, char** argv)
         par.update(0.0f);
         drawParallel(par.drawingInformation());
     }
+
+/// end mesure 
+auto stop = std::chrono::high_resolution_clock::now();
+auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+std::cout << "Temps d'exécution : " << duration.count() << " microsecondes" << std::endl;
 
     SDL_Quit();
     return 0;
