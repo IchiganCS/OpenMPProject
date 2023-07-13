@@ -14,6 +14,10 @@
 #include <utility>
 #include <vector>
 
+// fabrice
+#include <chrono>
+#include <fstream>
+
 using namespace std;
 
 ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount, int width, int height,
@@ -33,8 +37,14 @@ ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vec
     repartition();
 }
 
+// ############################# Exection time for generateGoal ####################### //
+
 void ParAlgorithm::generateGoal(int i)
 {
+    // start
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<> widthGen(width / 5.0f * 1, width / 5.0f * 3);
@@ -48,6 +58,17 @@ void ParAlgorithm::generateGoal(int i)
             generateGoal(i);
             return;
         }
+
+    
+    // second part 
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+
+    std::ofstream myfile;
+    myfile.open ("Execution_time.txt");
+    myfile << "Time = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    myfile.close();
 }
 
 void ParAlgorithm::repartition()
