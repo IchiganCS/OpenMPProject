@@ -1,3 +1,4 @@
+#include "src/Draw.h"
 #include "src/SimpleFlockingBird/SimpleFlockingBird.h"
 #include "src/Simulation.h"
 #include "src/utils/Utils.h"
@@ -25,8 +26,9 @@ int main(int argc, char **argv) {
   Utils::WINDOW_WIDTH = 0.8 * dm.w;
   SimpleFlockingBird algo;
   std::vector<Bird> birds;
+  initDrawing(Utils::WINDOW_HEIGHT);
 
-  Utils::intialiseInitPostion(birds, 50);
+  Utils::intialiseInitPostion(birds, 1);
 
   std::cout << "Running" << std::endl;
   Simulation s(&algo, birds);

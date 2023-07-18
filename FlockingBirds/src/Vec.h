@@ -1,28 +1,36 @@
 #ifndef VEC_H
 #define VEC_H
 
-#include <math.h>
-
 class Vec {
 public:
-  float X, Y;
-  Vec() {
-    X = 0;
-    Y = 0;
-  }
+  float x = 0, y = 0;
 
-  inline float length() { return sqrtf(X * X + Y * Y); }
+  float distanceTo(const Vec &other);
+  void toLength(float length);
+  void limitLength(float length);
+  float length();
+  void scale(float scale);
 
-  inline Vec getNormalisedVec() {
+  /// Calculates the angle of the vector relative to (1, 0) measured
+  /// counter-clockwise (e.g. (0, 1) is Pi/2)
+  float angle();
+  bool operator==(const Vec &other) const;
+  Vec operator-(const Vec &other) const;
+  Vec operator+(const Vec &other) const;
+  Vec &operator+=(const Vec &other);
+
+  Vec operator*(double scalar) const {
     Vec v;
-    v.X = X / (length() == 0 ? 1 : length());
-    v.Y = Y / (length() == 0 ? 1 : length());
+    v.x = x * scalar;
+    v.y = y * scalar;
     return v;
   }
 
-  static float distance(Vec &a, Vec &b) {
-    float dist =
-        sqrtf(((a.X - b.X) * (a.X - b.X)) + ((a.Y - b.Y) * (a.Y - b.Y)));
+  inline Vec getNormalisedVec() {
+    Vec v;
+    v.x = x / ((length() == 0) ? 1 : length());
+    v.y = y / ((length() == 0) ? 1 : length());
+    return v;
   }
 };
 
