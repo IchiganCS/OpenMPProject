@@ -26,12 +26,14 @@ int main(int argc, char **argv) {
   Utils::WINDOW_WIDTH = 0.8 * dm.w;
   SimpleFlockingBird algo;
   std::vector<Bird> birds;
+  std::vector<Obstacle> obstacles;
   initDrawing(Utils::WINDOW_HEIGHT);
 
   Utils::intialiseInitPostion(birds, 1);
+  Utils::intialiseInitObstacles(obstacles, 1);
 
   std::cout << "Running" << std::endl;
-  Simulation s(&algo, birds);
+  Simulation s(&algo, birds, obstacles);
   s.simulate();
 
   SDL_Quit();

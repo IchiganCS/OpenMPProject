@@ -21,9 +21,11 @@ void initDrawing(int size) {
   if (SDL_Init(SDL_INIT_VIDEO))
     cout << "SDL could not be initialized." << endl;
 
-  window = SDL_CreateWindow("Flocking birds", SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED, Utils::WINDOW_HEIGHT,
-                            Utils::WINDOW_HEIGHT, 0);
+  window = SDL_CreateWindow("Flocking birds - RED - Alignment factor, Green - "
+                            "Sepration factor, Blue - Cohesion factor",
+                            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                            Utils::WINDOW_WIDTH, Utils::WINDOW_HEIGHT, 0);
+  Utils::DETAILS_WIDTH = Utils::WINDOW_WIDTH - Utils::WINDOW_HEIGHT;
   renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
@@ -91,7 +93,56 @@ static void drawBirds(const vector<Bird> &birds,
                      nullptr, 0);
 }
 
+static int SDL_RenderFillCircle(SDL_Renderer *renderer, int x, int y,
+                                int radius) {
+  int offsetx, offsety, d;
+  int status;
+
+  // CHECK_RENDERER_MAGIC(renderer, -1);
+
+  offsetx = 0;
+  offsety = radius;
+  d = radius - 1;
+  status = 0;
+
+  while (offsety >= offsetx) {
+
+    status += SDL_RenderDrawLine(renderer, x - offsety, y + offsetx,
+                                 x + offsety, y + offsetx);
+    status += SDL_RenderDrawLine(renderer, x - offsetx, y + offsety,
+                                 x + offsetx, y + offsety);
+    status += SDL_RenderDrawLine(renderer, x - offsetx, y - offsety,
+                                 x + offsetx, y - offsety);
+    status += SDL_RenderDrawLine(renderer, x - offsety, y - offsetx,
+                                 x + offsety, y - offsetx);
+
+    if (status < 0) {
+      status = -1;
+      break;
+    }
+
+    if (d >= 2 * offsetx) {
+      d -= 2 * offsetx + 1;
+      offsetx += 1;
+    } else if (d < 2 * (radius - offsety)) {
+      d += 2 * offsety - 1;
+      offsety -= 1;
+    } else {
+      d += 2 * (offsety - offsetx - 1);
+      offsety -= 1;
+      offsetx += 1;
+    }
+  }
+
+  return status;
+}
+
 static void drawObstacle(const Obstacle &obstacle) {
+  SDL_SetRenderDrawColor(renderer, obstacleColor.r, obstacleColor.g,
+                         obstacleColor.b, obstacleColor.a);
+  SDL_RenderFillCircle(renderer, obstacle.center.x, obstacle.center.y,
+                       obstacle.radius);
+  return;
   SDL_SetRenderDrawColor(renderer, obstacleColor.r, obstacleColor.g,
                          obstacleColor.b, obstacleColor.a);
 
@@ -153,13 +204,52 @@ static void drawGoal(const Vec &position) {
   SDL_RenderFillRectF(renderer, &goalBox);
 }
 
-void drawOnlyBirds(const std::vector<Bird> &birds) {
+void drawOnlyBirds(const std::vector<Bird> &birds,
+                   std::vector<Obstacle> &obstacles) {
 
   SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
   SDL_RenderClear(renderer);
-
   drawBirds(birds);
+  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+  for (Obstacle &obstacle : obstacles)
+    drawObstacle(obstacle);
+
+  SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+  SDL_FRect goalBox;
+  goalBox.x = Utils::WINDOW_HEIGHT;
+  goalBox.y = 0;
+  goalBox.h = Utils::WINDOW_HEIGHT;
+  goalBox.w = Utils::DETAILS_WIDTH;
+  SDL_RenderFillRectF(renderer, &goalBox);
+
+  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+  SDL_FRect align_factor;
+  align_factor.x = Utils::WINDOW_HEIGHT;
+  align_factor.y = 0;
+  align_factor.h =
+      (Utils::WINDOW_HEIGHT * float(float(Utils::ALIGNMENT_FACTOR) / 100.00f));
+  align_factor.w = Utils::DETAILS_WIDTH * 0.33;
+  SDL_RenderFillRectF(renderer, &align_factor);
+
+  SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+  SDL_FRect sepration;
+  sepration.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.33;
+  sepration.y = 0;
+  sepration.h =
+      (Utils::WINDOW_HEIGHT * float(float(Utils::SEPRATION_FACTOR) / 100.00f));
+  sepration.w = Utils::DETAILS_WIDTH * 0.33;
+  SDL_RenderFillRectF(renderer, &sepration);
+
+  SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+  SDL_FRect cohesion_factor;
+  cohesion_factor.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.66;
+  cohesion_factor.y = 0;
+  cohesion_factor.h =
+      (Utils::WINDOW_HEIGHT * float(float(Utils::COHESION_FACTOR) / 100.00f));
+  cohesion_factor.w = Utils::DETAILS_WIDTH * 0.33;
+  SDL_RenderFillRectF(renderer, &cohesion_factor);
 
   SDL_RenderPresent(renderer);
 }

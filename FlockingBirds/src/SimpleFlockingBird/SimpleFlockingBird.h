@@ -2,6 +2,8 @@
 #define SIMPLEFLOCKINGBIR_H
 #include "src/Algorithm.h"
 #include "src/Bird.h"
+#include "src/Obstacle.h"
+#
 #include <vector>
 
 class SimpleFlockingBird : public Algorithm {
@@ -10,6 +12,6 @@ private:
 public:
   SimpleFlockingBird(/* args */);
   ~SimpleFlockingBird();
-  void update(std::vector<Bird> &birds);
+  void update(std::vector<Bird> &birds, std::vector<Obstacle> &obs);
 };
 #endif

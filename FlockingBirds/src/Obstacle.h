@@ -2,12 +2,12 @@
 #define OBSTACLE_H
 
 #include "Vec.h"
-struct Obstacle
-{
-    Vec center;
-    float radius;
+class Obstacle {
+public:
+  Vec center;
+  float radius;
 
-    float distanceTo(const Vec& position) const;
+  float distanceTo(const Vec &position) const;
 };
 
 #endif

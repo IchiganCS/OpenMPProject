@@ -69,21 +69,32 @@ void Simulation::simulate() {
             Birds.pop_back();
           break;
         }
+        case SDLK_h: {
+          if (obstacles.size() < 1000)
+            obstacles.push_back(Utils::getObstacle());
+          break;
+        }
+        case SDLK_n: {
+          if (obstacles.size() > 0)
+            obstacles.pop_back();
+          break;
+        }
 
         default: { ; }
         }
       }
     }
     if (running) {
-      algo->update(Birds);
-      drawOnlyBirds(Birds);
+      algo->update(Birds, obstacles);
+      drawOnlyBirds(Birds, obstacles);
       printf("FPS = %d\n", Utils::FPS);
       SDL_Delay((1000 / Utils::FPS));
     }
   }
 }
 
-Simulation::Simulation(Algorithm *a, std::vector<Bird> &birds)
-    : Birds(birds), algo(a) {
+Simulation::Simulation(Algorithm *a, std::vector<Bird> &birds,
+                       std::vector<Obstacle> &o)
+    : Birds(birds), algo(a), obstacles(o) {
   ;
 }

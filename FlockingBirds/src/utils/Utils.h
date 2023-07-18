@@ -3,6 +3,7 @@
 
 #include "src/Bird.h"
 
+#include "src/Obstacle.h"
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
@@ -12,6 +13,7 @@ class Utils {
 public:
   static int WINDOW_WIDTH;
   static int WINDOW_HEIGHT;
+  static int DETAILS_WIDTH;
   static int SEPRATION_FACTOR;
   static int ALIGNMENT_FACTOR;
   static int COHESION_FACTOR;
@@ -37,15 +39,31 @@ public:
     }
   }
 
+  static void intialiseInitObstacles(std::vector<Obstacle> &obstacles,
+                                     int noOfobstacles) {
+    obstacles.clear();
+    for (int i = 0; i < noOfobstacles; i++) {
+      obstacles.push_back(getObstacle());
+    }
+  }
+
   static Bird getBird() {
     Bird b;
     b.angle = getRandomNum(0, 360);
     Vec &pos = b.position;
-    b.position.x = getRandomNum(0, WINDOW_WIDTH);
+    b.position.x = getRandomNum(0, WINDOW_HEIGHT);
     b.position.y = getRandomNum(0, WINDOW_HEIGHT);
-    b.velocity.x = getRandomNum(0, WINDOW_WIDTH);
-    b.velocity.y = getRandomNum(0, WINDOW_WIDTH);
+    b.velocity.x = getRandomNum(0, WINDOW_HEIGHT);
+    b.velocity.y = getRandomNum(0, WINDOW_HEIGHT);
     return b;
+  }
+
+  static Obstacle getObstacle() {
+    Obstacle obstacle;
+    obstacle.center.x = getRandomNum(0, WINDOW_HEIGHT);
+    obstacle.center.y = getRandomNum(0, WINDOW_HEIGHT);
+    obstacle.radius = getRandomNum(10, 50);
+    return obstacle;
   }
 
   static void printBirdsData(std::vector<Bird> &birds) {

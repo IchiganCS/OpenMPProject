@@ -2,6 +2,7 @@
 #define DRAW_H
 
 #include "Bird.h"
+#include "Obstacle.h"
 #include <SDL_pixels.h>
 #include <vector>
 
@@ -21,6 +22,6 @@ const SDL_Color obstacleColor = {255, 255, 255, SDL_ALPHA_OPAQUE};
 
 void initDrawing(int size);
 
-void drawOnlyBirds(const std::vector<Bird> &birds);
-
+void drawOnlyBirds(const std::vector<Bird> &birds,
+                   std::vector<Obstacle> &obstacles);
 #endif

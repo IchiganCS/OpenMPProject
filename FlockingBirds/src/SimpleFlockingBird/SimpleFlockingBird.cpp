@@ -5,6 +5,8 @@
 
 static int sep_radius = 40;
 static int alignment_radius = 200;
+static float collisionCutOff = 10.0;
+static float collisionBreakOne = 1000.0;
 
 namespace {
 
@@ -23,8 +25,9 @@ double wrapAround(double value, double min, double max) {
   return wrappedValue;
 }
 
-void boids_algorithm(std::vector<Bird> &birds, double separation_factor = 1,
-                     double alignment_factor = 1, double cohesion_factor = 1) {
+void boids_algorithm(std::vector<Bird> &birds, std::vector<Obstacle> &obs,
+                     double separation_factor = 1, double alignment_factor = 1,
+                     double cohesion_factor = 1) {
   printf(
       "separation factor = %f, alignment factor = %f, cohesion factor = %f\n",
       separation_factor, alignment_factor, cohesion_factor);
@@ -34,6 +37,7 @@ void boids_algorithm(std::vector<Bird> &birds, double separation_factor = 1,
   std::vector<Vec> separation_vectors(num_boids, Vec());
   std::vector<Vec> alignment_vectors(num_boids, Vec());
   std::vector<Vec> cohesion_vectors(num_boids, Vec());
+  std::vector<Vec> obstacle_avoidance_vectors(num_boids, Vec());
   for (size_t i = 0; i < num_boids; ++i) {
     Vec average_align_velocity;
     int align_neighbours_count = 0;
@@ -62,6 +66,23 @@ void boids_algorithm(std::vector<Bird> &birds, double separation_factor = 1,
     cohesion_vectors[i] = (average_position - birds[i].position);
     cohesion_vectors[i] = cohesion_vectors[i].getNormalisedVec();
     separation_vectors[i] = separation_vectors[i].getNormalisedVec();
+    int no_of_close_obs = 0;
+    for (int j = 0; j < obs.size(); j++) {
+      Obstacle &obstacle = obs[j];
+      Vec dir = obstacle.center - birds[i].position;
+      float distLength = obstacle.distanceTo(birds[i].position);
+
+      if (distLength != 0 && distLength < collisionCutOff) {
+        dir.toLength(-collisionBreakOne / distLength);
+        obstacle_avoidance_vectors[i] += dir;
+      }
+    }
+    if (no_of_close_obs != 0) {
+      obstacle_avoidance_vectors[i] =
+          obstacle_avoidance_vectors[i] * (1.0 / no_of_close_obs);
+      obstacle_avoidance_vectors[i] =
+          obstacle_avoidance_vectors[i].getNormalisedVec();
+    }
   }
 
   // // Rule 2: Alignment - steer towards the average heading of nearby boids
@@ -95,7 +116,8 @@ void boids_algorithm(std::vector<Bird> &birds, double separation_factor = 1,
     birds[i].velocity = birds[i].velocity +
                         (separation_vectors[i] * (separation_factor / total)) +
                         (alignment_vectors[i] * (alignment_factor / total)) +
-                        (cohesion_vectors[i] * (cohesion_factor / total));
+                        (cohesion_vectors[i] * (cohesion_factor / total)) +
+                        obstacle_avoidance_vectors[i];
     birds[i].velocity = birds[i].velocity.getNormalisedVec() * 4;
     birds[i].position = birds[i].position + birds[i].velocity;
 
@@ -126,9 +148,10 @@ SimpleFlockingBird::SimpleFlockingBird(/* args */) {}
 
 SimpleFlockingBird::~SimpleFlockingBird() {}
 
-void SimpleFlockingBird::update(std::vector<Bird> &birds) {
+void SimpleFlockingBird::update(std::vector<Bird> &birds,
+                                std::vector<Obstacle> &obs) {
   Utils::printBirdsData(birds);
-  boids_algorithm(birds, Utils::ALIGNMENT_FACTOR, Utils::SEPRATION_FACTOR,
+  boids_algorithm(birds, obs, Utils::SEPRATION_FACTOR, Utils::ALIGNMENT_FACTOR,
                   Utils::COHESION_FACTOR);
   return;
 }
