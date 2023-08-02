@@ -1,6 +1,4 @@
-#ifndef BIRD_H
-#define BIRD_H
-
+#pragma once
 
 #include "Obstacle.h"
 #include "Vec.h"
@@ -9,20 +7,18 @@
 class Bird {
     public:
     Vec position;
-    Vec force;
+    Vec velocity;
     float angle;
 
-    void addLeaderAttraction(const std::vector<Bird>& leaders);
-    void addGoalAttraction(const Vec& goalPosition);
-    void addSeparationPushBack(const Vec& neighborPosition);
-    void addCohesionPull(const std::vector<Bird*>& neighbors);
-    void addCollisionPushBack(const Obstacle& obstacle);
-    void addAlignment(const std::vector<Bird*>& neighbors);
-    void applyForce();
-
+    Vec calculateLeaderAttraction(const std::vector<Bird>& leaders) const;
+    Vec calculateGoalAttraction(const Vec& goalPosition) const;
+    Vec calculateSeparationPushBack(const std::vector<Bird>& neighbors) const;
+    Vec calculateCohesionPull(const std::vector<Bird>& neighbors) const;
+    Vec calculateCollisionPushBack(const std::vector<Obstacle>& obstacles) const;
+    Vec calculateAlignment(const std::vector<Bird>& neighbors) const;
+    void applyForce(Vec const& force);
+    void applyVelocity();
 
     bool operator==(const Bird& other) const = default;
     bool operator!=(const Bird& other) const = default;
 };
-
-#endif

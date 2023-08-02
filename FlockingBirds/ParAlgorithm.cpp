@@ -16,8 +16,9 @@
 
 using namespace std;
 
-ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount, int width, int height,
-                           float visionRadius, int partitionCount, float partitionOverloadTolerance)
+ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles,
+                           int leaderCount, int width, int height, float visionRadius, int partitionCount,
+                           float partitionOverloadTolerance)
     : width(width), height(height), visionRadius(visionRadius), birds(initialBirds), obstacles(obstacles),
       partitionMaxElements((1 + partitionOverloadTolerance) * initialBirds.size() / partitionCount),
       partitionOverloadTolerance(partitionOverloadTolerance)
@@ -44,7 +45,8 @@ void ParAlgorithm::generateGoal(int i)
     leaders[i].second.y = heightGen(rng);
 
     for (auto& obs : obstacles)
-        if (obs.distanceTo(leaders[i].second) < 50) {
+        if (obs.distanceTo(leaders[i].second) < 50)
+        {
             generateGoal(i);
             return;
         }
@@ -95,7 +97,7 @@ void ParAlgorithm::repartitionIfOverloaded()
     }
 }
 
-vector<Bird*> ParAlgorithm::neighboursOf(const Bird* bird) const
+vector<Bird> ParAlgorithm::neighboursOf(const Bird* bird) const
 {
     // calculate neighbouring partitions in radius vision
     vector<int> partitionIndices;
@@ -106,12 +108,12 @@ vector<Bird*> ParAlgorithm::neighboursOf(const Bird* bird) const
             partitionIndices.push_back(i);
     }
 
-    vector<Bird*> res;
+    vector<Bird> res;
     for (auto partIdx : partitionIndices)
     {
         for (auto& other : get<0>(partitions[partIdx]))
             if (other != bird && other->position.distanceTo(bird->position) < visionRadius)
-                res.push_back(other);
+                res.push_back(*other);
     }
 
     return res;
@@ -129,40 +131,39 @@ void ParAlgorithm::reassignPartition(Bird* bird)
     }
 }
 
-const std::vector<Bird>& ParAlgorithm::update(float delta)
+const std::vector<Bird>& ParAlgorithm::update()
 {
     vector<Bird> leaderVals;
     for (auto& [leader, goal] : leaders)
         leaderVals.push_back(*leader);
 
-#pragma omp parallel for
-    for (auto& bird : birds)
-    {
-        bird.force = {0, 0};
+    vector<Vec> forcePerBird;
+    forcePerBird.resize(birds.size());
 
-        bird.addLeaderAttraction(leaderVals);
+#pragma omp parallel for
+    for (int i = 0; i < birds.size(); i++)
+    {
+        auto& bird = birds[i];
+        Vec& currentForce = forcePerBird[i];
+        currentForce += bird.calculateLeaderAttraction(leaderVals);
 
         auto neighbours = neighboursOf(&bird);
         if (neighbours.size() == 0)
             continue;
 
-        bird.addCohesionPull(neighbours);
-        bird.addAlignment(neighbours);
-
-        for (auto& neigh : neighbours)
-            bird.addSeparationPushBack(neigh->position);
-
-        for (auto& obs : obstacles)
-            bird.addCollisionPushBack(obs);
+        currentForce += bird.calculateCohesionPull(neighbours);
+        currentForce += bird.calculateAlignment(neighbours);
+        currentForce += bird.calculateSeparationPushBack(neighbours);
+        currentForce += bird.calculateCollisionPushBack(obstacles);
     }
 
     for (int i = 0; i < leaders.size(); i++)
     {
         auto& [leader, goal] = leaders[i];
 
-        if ((leader->position - goal).length() < 5)
+        if ((leader->position - goal).length() < 13)
             generateGoal(i);
-        leader->addGoalAttraction(goal);
+        forcePerBird[leader - birds.begin().base()] += leader->calculateGoalAttraction(goal);
     }
 
     for (auto& [partBirds, min, max] : partitions)
@@ -170,7 +171,10 @@ const std::vector<Bird>& ParAlgorithm::update(float delta)
         for (int i = 0; i < partBirds.size(); i++)
         {
             Bird* bird = partBirds[i];
-            bird->applyForce();
+            Vec& currentForce = forcePerBird[bird - birds.begin().base()];
+            bird->applyForce(currentForce);
+            bird->applyVelocity();
+            currentForce = {0, 0};
 
             if (bird->position.x < min || bird->position.x > max)
             {
@@ -203,7 +207,8 @@ ParAlgorithm::DrawingInformation ParAlgorithm::drawingInformation() const
     vector<pair<Bird, Vec>> derefLeaders;
     vector<Bird> leaderBirds;
     vector<Vec> leaderGoals;
-    for (auto& [leader, goal] : leaders) {
+    for (auto& [leader, goal] : leaders)
+    {
         leaderBirds.push_back(*leader);
         leaderGoals.push_back(goal);
     }

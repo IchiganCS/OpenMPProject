@@ -1,7 +1,7 @@
-#ifndef OBSTACLE_H
-#define OBSTACLE_H
+#pragma once
 
 #include "Vec.h"
+
 struct Obstacle
 {
     Vec center;
@@ -9,5 +9,3 @@ struct Obstacle
 
     float distanceTo(const Vec& position) const;
 };
-
-#endif

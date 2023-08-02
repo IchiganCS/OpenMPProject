@@ -46,7 +46,7 @@ class ParAlgorithm : public Algorithm
     /// Calculates the neighbors of a given bird and optimizes the search by checking if there could be a match for a
     /// given partition. If not, the partition and all its birds are skipped. The returned vector does not include the
     /// argument.
-    std::vector<Bird*> neighboursOf(const Bird* bird) const;
+    std::vector<Bird> neighboursOf(const Bird* bird) const;
 
   public:
     ParAlgorithm() = delete;
@@ -69,6 +69,6 @@ class ParAlgorithm : public Algorithm
     DrawingInformation drawingInformation() const;
 
     virtual ~ParAlgorithm() = default;
-    virtual const std::vector<Bird>& update(float delta);
+    virtual const std::vector<Bird>& update();
 };
 #endif

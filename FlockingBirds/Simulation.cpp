@@ -4,7 +4,7 @@
 
 void Simulation::simulate() {
   while (true) {
-    Birds = Algo->update(0.05f);
+    Birds = Algo->update();
 
     // drawBirds(Birds);
   }

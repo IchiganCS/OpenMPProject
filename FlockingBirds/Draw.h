@@ -1,5 +1,4 @@
-#ifndef DRAW_H
-#define DRAW_H
+#pragma once
 
 #include "Bird.h"
 #include "ParAlgorithm.h"
@@ -24,5 +23,3 @@ void initDrawing(int size);
 
 void drawOnlyBirds(const std::vector<Bird>& birds);
 void drawParallel(const ParAlgorithm::DrawingInformation&);
-
-#endif

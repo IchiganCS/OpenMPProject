@@ -8,6 +8,7 @@
 
 #include "Obstacle.h"
 #include "ParAlgorithm.h"
+#include "SimpleAlgorithm.h"
 #include "Simulation.h"
 
 #include "Draw.h"
@@ -56,7 +57,8 @@ int main(int argc, char** argv)
     }
 
 
-    ParAlgorithm par(birds, obstacles, 3, size, size, 100, 5, .1f);
+    ParAlgorithm alg(birds, obstacles, 3, size, size, 100, 5, .1f);
+    // SimpleAlgorithm alg(birds, obstacles);
 
     SDL_Event e;
     bool quit = false;
@@ -68,8 +70,8 @@ int main(int argc, char** argv)
                 quit = true;
         }
         // SDL_Delay(100);
-        par.update(0.0f);
-        drawParallel(par.drawingInformation());
+        alg.update();
+        drawParallel(alg.drawingInformation());
     }
 
     SDL_Quit();

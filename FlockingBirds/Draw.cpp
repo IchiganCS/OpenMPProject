@@ -27,7 +27,7 @@ void initDrawing(int size)
 }
 
 // Builds a triangle for each bird and renders it.
-static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdColor, bool drawWithAngle = false)
+static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdColor, bool drawWithAngle = true)
 {
     if (birds.size() == 0)
         return;
