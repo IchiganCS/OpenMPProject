@@ -1,10 +1,11 @@
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
+#pragma once
 
 #include "Bird.h"
 #include <vector>
 
 
-using Algorithm = void (*)(std::vector<Bird>);
-
-#endif
+class Algorithm {
+    public:
+    virtual ~Algorithm() = default;
+    virtual const std::vector<Bird>& update() = 0;
+};
