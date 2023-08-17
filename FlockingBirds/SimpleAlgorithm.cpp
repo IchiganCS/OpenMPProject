@@ -86,7 +86,6 @@ void boids_algorithm(std::vector<Bird>& birds, std::vector<Obstacle>& obs, doubl
         }
     }
 
-    
     float total = separation_factor + alignment_factor + cohesion_factor;
     // Update velocities and positions
     for (size_t i = 0; i < num_boids; ++i)
@@ -107,8 +106,16 @@ SimpleAlgorithm::SimpleAlgorithm(std::vector<Bird> const& birds, std::vector<Obs
 {
 }
 
-std::vector<Bird> const& SimpleAlgorithm::update()
+void SimpleAlgorithm::update()
 {
     boids_algorithm(birds, obstacles);
-    return birds;
+}
+
+void SimpleAlgorithm::fillCSV(CSVEntry& entry)
+{
+    entry.methodName = "simple";
+    entry.birdCount = birds.size();
+    entry.obstacleCount = obstacles.size();
+    entry.partitionCount = {};
+    entry.partitionOverload = {};
 }

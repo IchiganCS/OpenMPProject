@@ -3,32 +3,24 @@
 #include <SDL_keycode.h>
 #include <SDL_render.h>
 #include <SDL_timer.h>
+#include <fstream>
 #include <iostream>
 #include <random>
 
+#include "Benchmark.h"
+#include "CSVWriter.h"
 #include "Obstacle.h"
 #include "ParAlgorithm.h"
 #include "SimpleAlgorithm.h"
-#include "Simulation.h"
 
 #include "Draw.h"
 #include <omp.h>
 #include <vector>
 
-// more leaders
-// obstacles
-// smooth angles for display
-
-
-int main(int argc, char** argv)
+std::pair<std::vector<Bird>, std::vector<Obstacle>> ranGen(int size, int birdCount, int obstacleCount)
 {
-    omp_set_num_threads(5);
-    const int size = 1500;
-    initDrawing(size);
-
     std::vector<Bird> birds;
     std::vector<Obstacle> obstacles;
-
 
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -37,7 +29,7 @@ int main(int argc, char** argv)
 
     std::uniform_real_distribution<> angle(0, 2 * 3.141);
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < birdCount; i++)
     {
         Bird bird;
         bird.position.x = pos(rng);
@@ -46,7 +38,7 @@ int main(int argc, char** argv)
         birds.push_back(bird);
     }
 
-     for (int i = 0; i < 15; i++)
+    for (int i = 0; i < obstacleCount; i++)
     {
         Obstacle obstacle;
         obstacle.center.x = pos(rng);
@@ -56,9 +48,61 @@ int main(int argc, char** argv)
         obstacles.push_back(obstacle);
     }
 
+    return {birds, obstacles};
+}
 
-    ParAlgorithm alg(birds, obstacles, 3, size, size, 100, 5, .1f);
-    // SimpleAlgorithm alg(birds, obstacles);
+void benchmarkAll()
+{
+    std::ofstream file;
+    file.open("results.csv");
+
+    writeHeader(file);
+
+    std::vector<int> birdCounts = {200, 500};
+    std::vector<int> sizes = {300, 1000};
+    std::vector<int> radiuses = {10, 100};
+    std::vector<int> obstacleCounts = {10};
+    std::vector<int> leaderCounts = {3};
+    std::vector<int> partitionCounts = {5};
+    std::vector<int> threadCounts = {3, 5};
+    std::vector<float> partitionOverloads = {0.1f, 0.3f};
+
+    for (auto threadCount : threadCounts)
+    {
+        omp_set_num_threads(threadCount);
+        for (auto birdCount : birdCounts)
+            for (auto size : sizes)
+                for (auto radius : radiuses)
+                    for (auto leaderCount : leaderCounts)
+                        for (auto obstacleCount : obstacleCounts)
+                        {
+                            auto [birds, obstacles] = ranGen(size, birdCount, obstacleCount);
+
+                            SimpleAlgorithm alg(birds, obstacles);
+                            benchmark(&alg, 1000, threadCount, file);
+                            for (auto partitionCount : partitionCounts)
+                                for (auto partitionOverload : partitionOverloads)
+                                {
+                                    ParAlgorithm alg(birds, obstacles, leaderCount, size, size, radius, partitionCount,
+                                                     partitionOverload);
+                                    benchmark(&alg, 1000, threadCount, file);
+                                }
+                        }
+    }
+
+    file.close();
+}
+
+int main(int argc, char** argv)
+{
+    benchmarkAll();
+    return 0;
+
+    const int size = 1500;
+    initDrawing(size);
+    auto [birds, obstacles] = ranGen(size, 1000, 30);
+
+    ParAlgorithm alg(birds, obstacles, 3, size, size, 300, 5, 0.1f);
 
     SDL_Event e;
     bool quit = false;

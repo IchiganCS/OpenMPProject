@@ -33,7 +33,8 @@ class ParAlgorithm : public Algorithm
     /// a maximal x for which it is responsible.
     std::vector<std::tuple<std::vector<Bird*>, float, float>> partitions;
 
-    /// Holds all birds. The vector itself may not be modified, only the content.
+    /// Holds all birds. The vector itself may not be modified and the sorting to be maintained, only the elements may
+    /// be changed.
     std::vector<Bird> birds;
 
     std::vector<Obstacle> obstacles;
@@ -55,20 +56,21 @@ class ParAlgorithm : public Algorithm
     /// The birds will be copied into a private field.
     /// PartitionOverloadTolerance is a value in percent, e.g. 0.1f means that each partition may hold up
     /// to 10% more birds than what is optimal.
-    ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount, int width, int height, float visionRadius,
-                 int partitionCount, float partitionOverloadTolerance);
+    ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount,
+                 int width, int height, float visionRadius, int partitionCount, float partitionOverloadTolerance);
 
-    
-    struct DrawingInformation {
-      const std::vector<Bird>* birds;
-      std::vector<float> partitions;
-      std::vector<Bird> leaders;
-      std::vector<Vec> goals;
-      const std::vector<Obstacle>* obstacles;
+    struct DrawingInformation
+    {
+        const std::vector<Bird>* birds;
+        std::vector<float> partitions;
+        std::vector<Bird> leaders;
+        std::vector<Vec> goals;
+        const std::vector<Obstacle>* obstacles;
     };
     DrawingInformation drawingInformation() const;
 
-    virtual ~ParAlgorithm() = default;
-    virtual const std::vector<Bird>& update();
+    // virtual ~ParAlgorithm() = default;
+    virtual void update();
+    virtual void fillCSV(CSVEntry& entry);
 };
 #endif

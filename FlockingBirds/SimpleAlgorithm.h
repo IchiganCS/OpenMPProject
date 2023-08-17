@@ -13,5 +13,6 @@ class SimpleAlgorithm : public Algorithm
   public:
     SimpleAlgorithm(std::vector<Bird> const& birds, std::vector<Obstacle> const& obs);
     virtual ~SimpleAlgorithm() = default;
-    virtual const std::vector<Bird>& update();
+    virtual void update();
+    virtual void fillCSV(CSVEntry& entry);
 };

@@ -1,4 +1,5 @@
 #include "ParAlgorithm.h"
+#include "CSVWriter.h"
 #include "Obstacle.h"
 
 #include <algorithm>
@@ -15,6 +16,9 @@
 #include <vector>
 
 using namespace std;
+
+static constexpr float leaderNearGoal = 13;
+static constexpr float goalGenerationRetries = 10;
 
 ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles,
                            int leaderCount, int width, int height, float visionRadius, int partitionCount,
@@ -41,15 +45,19 @@ void ParAlgorithm::generateGoal(int i)
     std::uniform_real_distribution<> widthGen(width / 5.0f * 1, width / 5.0f * 3);
     std::uniform_real_distribution<> heightGen(height / 5.0f * 1, height / 5.0f * 3);
 
-    leaders[i].second.x = widthGen(rng);
-    leaders[i].second.y = heightGen(rng);
+    for (int i = 0; i < goalGenerationRetries; i++)
+    {
+        leaders[i].second.x = widthGen(rng);
+        leaders[i].second.y = heightGen(rng);
 
-    for (auto& obs : obstacles)
-        if (obs.distanceTo(leaders[i].second) < 50)
-        {
-            generateGoal(i);
+        bool tooClose = false;
+        for (auto& obs : obstacles)
+            if (obs.distanceTo(leaders[i].second) < 50)
+                tooClose = true;
+
+        if (!tooClose)
             return;
-        }
+    }
 }
 
 void ParAlgorithm::repartition()
@@ -70,6 +78,7 @@ void ParAlgorithm::repartition()
     {
         auto& [currentPart, min, max] = partitions[partIdx];
         int roundDown = floor(birdsForCurrentPartition);
+
         currentPart.clear();
         currentPart.reserve(roundDown);
 
@@ -81,7 +90,7 @@ void ParAlgorithm::repartition()
         max = partIdx == partitions.size() - 1 ? numeric_limits<float>::max() : currentPart.back()->position.x;
 
         handledBirds += roundDown;
-        birdsForCurrentPartition = (birdsForCurrentPartition - roundDown) + birdsPerPartition;
+        birdsForCurrentPartition = birdsForCurrentPartition - roundDown + birdsPerPartition;
     }
 }
 
@@ -131,7 +140,7 @@ void ParAlgorithm::reassignPartition(Bird* bird)
     }
 }
 
-const std::vector<Bird>& ParAlgorithm::update()
+void ParAlgorithm::update()
 {
     vector<Bird> leaderVals;
     for (auto& [leader, goal] : leaders)
@@ -161,8 +170,10 @@ const std::vector<Bird>& ParAlgorithm::update()
     {
         auto& [leader, goal] = leaders[i];
 
-        if ((leader->position - goal).length() < 13)
+        if ((leader->position - goal).length() < leaderNearGoal)
             generateGoal(i);
+
+        // honestly, it's not nice, but I think it maybe is even defined behavior
         forcePerBird[leader - birds.begin().base()] += leader->calculateGoalAttraction(goal);
     }
 
@@ -189,8 +200,6 @@ const std::vector<Bird>& ParAlgorithm::update()
     }
 
     repartitionIfOverloaded();
-
-    return birds;
 }
 
 ParAlgorithm::DrawingInformation ParAlgorithm::drawingInformation() const
@@ -219,4 +228,13 @@ ParAlgorithm::DrawingInformation ParAlgorithm::drawingInformation() const
     di.goals = leaderGoals;
     di.obstacles = &obstacles;
     return di;
+}
+
+void ParAlgorithm::fillCSV(CSVEntry& entry)
+{
+    entry.methodName = "parallel";
+    entry.birdCount = birds.size();
+    entry.obstacleCount = obstacles.size();
+    entry.partitionCount = partitions.size();
+    entry.partitionOverload = partitionOverloadTolerance;
 }

@@ -2,16 +2,21 @@
 
 using namespace std;
 
-void writeHeader(ostream& file)
+template <class T> std::ostream& operator<<(std::ostream& out, std::optional<T> const& opt)
 {
-    file << "name, birdCount, time, partitionCount\n";
+    if (opt.has_value())
+        out << opt.value();
+
+    return out;
 }
 
-void writeSeqEntry(ostream& file, int birdCount, float time)
+void writeHeader(ostream& file)
 {
-    file << "sequential, " << birdCount << ", " << time << ", \n";
+    file << "name, time, threadCount, birdCount, obstacleCount, partitionCount, partitionOverload\n";
 }
-void writeParEntry(ostream& file, int birdCount, float time, int partitionCount)
+
+void writeEntry(ostream& file, CSVEntry const& entry)
 {
-    file << "parallel, " << birdCount << ", " << time << ", " << partitionCount << "\n";
+    file << entry.methodName << ", " << entry.time.count() << ", " << entry.threadCount << ", " << entry.birdCount << ", " << entry.obstacleCount
+         << ", " << entry.partitionCount << ", " << entry.partitionOverload << "\n";
 }
