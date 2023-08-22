@@ -1,16 +1,22 @@
 #include "Simulation.h"
 #include "Bird.h"
 #include "Draw.h"
-#include "src/utils/Utils.h"
+#include "Utils.h"
+#ifndef EXCLUDESDL
 #include <SDL2/SDL.h>
+#endif
 #include <string>
 
 int count = 0;
 
 void Simulation::simulate() {
-  SDL_Event e;
   bool running = true;
+#ifndef EXCLUDESDL
+  SDL_Event e;
+#endif
   while (running) {
+#ifndef EXCLUDESDL
+
     while (SDL_PollEvent(&e)) {
 
       if (e.type == SDL_QUIT) {
@@ -79,16 +85,30 @@ void Simulation::simulate() {
             obstacles.pop_back();
           break;
         }
+        case SDLK_j: {
+          if (Utils::AVOIDANCE_FACTOR < 100)
+            Utils::AVOIDANCE_FACTOR++;
+          break;
+        }
+        case SDLK_m: {
+          if (Utils::AVOIDANCE_FACTOR > 1)
+            Utils::AVOIDANCE_FACTOR--;
+          break;
+        }
 
         default: { ; }
         }
       }
     }
+#endif
     if (running) {
       algo->update(Birds, obstacles);
+#ifndef EXCLUDESDL
+
       drawOnlyBirds(Birds, obstacles);
       printf("FPS = %d\n", Utils::FPS);
       SDL_Delay((1000 / Utils::FPS));
+#endif
     }
   }
 }

@@ -1,4 +1,6 @@
+
 #include "Draw.h"
+#ifndef EXCLUDESDL
 #include "Obstacle.h"
 #include "utils/Utils.h"
 
@@ -230,26 +232,37 @@ void drawOnlyBirds(const std::vector<Bird> &birds,
   align_factor.y = 0;
   align_factor.h =
       (Utils::WINDOW_HEIGHT * float(float(Utils::ALIGNMENT_FACTOR) / 100.00f));
-  align_factor.w = Utils::DETAILS_WIDTH * 0.33;
+  align_factor.w = Utils::DETAILS_WIDTH * 0.25;
   SDL_RenderFillRectF(renderer, &align_factor);
 
   SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
   SDL_FRect sepration;
-  sepration.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.33;
+  sepration.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.25;
   sepration.y = 0;
   sepration.h =
       (Utils::WINDOW_HEIGHT * float(float(Utils::SEPRATION_FACTOR) / 100.00f));
-  sepration.w = Utils::DETAILS_WIDTH * 0.33;
+  sepration.w = Utils::DETAILS_WIDTH * 0.25;
   SDL_RenderFillRectF(renderer, &sepration);
 
   SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
   SDL_FRect cohesion_factor;
-  cohesion_factor.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.66;
+  cohesion_factor.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.50;
   cohesion_factor.y = 0;
   cohesion_factor.h =
       (Utils::WINDOW_HEIGHT * float(float(Utils::COHESION_FACTOR) / 100.00f));
-  cohesion_factor.w = Utils::DETAILS_WIDTH * 0.33;
+  cohesion_factor.w = Utils::DETAILS_WIDTH * 0.25;
   SDL_RenderFillRectF(renderer, &cohesion_factor);
+
+  SDL_SetRenderDrawColor(renderer, 0, 111, 255, 255);
+  SDL_FRect avoidance_factor;
+  avoidance_factor.x = Utils::WINDOW_HEIGHT + Utils::DETAILS_WIDTH * 0.75;
+  avoidance_factor.y = 0;
+  avoidance_factor.h =
+      (Utils::WINDOW_HEIGHT * float(float(Utils::AVOIDANCE_FACTOR) / 100.00f));
+  avoidance_factor.w = Utils::DETAILS_WIDTH * 0.25;
+  SDL_RenderFillRectF(renderer, &avoidance_factor);
 
   SDL_RenderPresent(renderer);
 }
+
+#endif

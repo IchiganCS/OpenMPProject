@@ -1,8 +1,8 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
-#include "src/Bird.h"
-#include "src/Obstacle.h"
+#include "Bird.h"
+#include "Obstacle.h"
 #include <vector>
 
 class Algorithm {

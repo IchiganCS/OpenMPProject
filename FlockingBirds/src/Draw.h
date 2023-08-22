@@ -1,3 +1,5 @@
+#define EXCLUDESDL
+#ifndef EXCLUDESDL
 #ifndef DRAW_H
 #define DRAW_H
 
@@ -24,4 +26,5 @@ void initDrawing(int size);
 
 void drawOnlyBirds(const std::vector<Bird> &birds,
                    std::vector<Obstacle> &obstacles);
+#endif
 #endif

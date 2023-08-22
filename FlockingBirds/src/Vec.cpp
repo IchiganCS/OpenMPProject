@@ -20,6 +20,11 @@ Vec Vec::operator-(const Vec &other) const {
   res.y = y - other.y;
   return res;
 }
+
+bool Vec::operator==(const Vec &other) const {
+  return x == other.x && y == other.y;
+}
+
 Vec Vec::operator+(const Vec &other) const {
   Vec res;
   res.x = x + other.x;

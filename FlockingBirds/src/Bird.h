@@ -1,7 +1,7 @@
 #ifndef BIRD_H
 #define BIRD_H
 
-#include "src/Vec.h"
+#include "Vec.h"
 #include <cmath>
 #include <stdio.h>
 
@@ -17,14 +17,17 @@ public:
     position.y = 0;
   }
 
+  bool operator==(const Bird &other) const {
+    return position == other.position && velocity == other.velocity &&
+           angle == other.angle;
+  }
+
   void print() {
     printf("position.x = %f, position.y = %f, velocity.x = %f, velocity.y = "
            "%f, theta = %f\n",
            position.x, position.y, velocity.x, velocity.y, angle);
   }
-  const double calculateDirection() {
-    return std::atan2(velocity.y, velocity.x);
-  }
+  double calculateDirection() { return std::atan2(velocity.y, velocity.x); }
 };
 
 #endif

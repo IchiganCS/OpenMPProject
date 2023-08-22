@@ -1,8 +1,8 @@
 #ifndef SIMPLEFLOCKINGBIR_H
 #define SIMPLEFLOCKINGBIR_H
-#include "src/Algorithm.h"
-#include "src/Bird.h"
-#include "src/Obstacle.h"
+#include "Algorithm.h"
+#include "Bird.h"
+#include "Obstacle.h"
 #
 #include <vector>
 

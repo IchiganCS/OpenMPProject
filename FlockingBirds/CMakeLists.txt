@@ -17,5 +17,7 @@ add_executable(main
 )
 
 target_compile_options(main PUBLIC)
-target_include_directories(main PUBLIC . ${SDL2_INCLUDE_DIRS})
+target_include_directories(main PUBLIC . src/ ${SDL2_INCLUDE_DIRS})
+# target_include_directories(main PUBLIC .)
 target_link_libraries(main OpenMP::OpenMP_CXX ${SDL2_LIBRARIES})
+# target_link_libraries(main OpenMP::OpenMP_CXX)
