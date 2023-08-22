@@ -1,3 +1,6 @@
 .cache/
 build/
 .vscode/
+*.o
+a.out
+*.csv
