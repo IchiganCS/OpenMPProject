@@ -58,18 +58,19 @@ void benchmarkAll()
 
     writeHeader(file);
 
-    std::vector<int> birdCounts = {200, 500};
-    std::vector<int> sizes = {300, 1000};
+    std::vector<int> birdCounts = {200, 500, 1000};
+    std::vector<int> sizes = {300, 1000, 1500};
     std::vector<int> radiuses = {10, 100};
-    std::vector<int> obstacleCounts = {10};
+    std::vector<int> obstacleCounts = {10, 40};
     std::vector<int> leaderCounts = {3};
-    std::vector<int> partitionCounts = {5};
-    std::vector<int> threadCounts = {3, 5};
+    std::vector<int> partitionCounts = {5, 10};
+    std::vector<int> threadCounts = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 24};
     std::vector<float> partitionOverloads = {0.1f, 0.3f};
 
     for (auto threadCount : threadCounts)
     {
         omp_set_num_threads(threadCount);
+
         for (auto birdCount : birdCounts)
             for (auto size : sizes)
                 for (auto radius : radiuses)
@@ -79,13 +80,14 @@ void benchmarkAll()
                             auto [birds, obstacles] = ranGen(size, birdCount, obstacleCount);
 
                             SimpleAlgorithm alg(birds, obstacles);
-                            benchmark(&alg, 1000, threadCount, file);
+                            benchmarkAndWriteMany(&alg, file, 1000, threadCount, size, radius, leaderCount);
+
                             for (auto partitionCount : partitionCounts)
                                 for (auto partitionOverload : partitionOverloads)
                                 {
                                     ParAlgorithm alg(birds, obstacles, leaderCount, size, size, radius, partitionCount,
                                                      partitionOverload);
-                                    benchmark(&alg, 1000, threadCount, file);
+                                    benchmarkAndWriteMany(&alg, file, 1000, threadCount, size, radius, leaderCount);
                                 }
                         }
     }
@@ -95,7 +97,9 @@ void benchmarkAll()
 
 int main(int argc, char** argv)
 {
-    benchmarkAll();
+    std::cout << omp_get_max_threads() << std::endl;
+
+    //benchmarkAll();
     return 0;
 
     const int size = 1500;

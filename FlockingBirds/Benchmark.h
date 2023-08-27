@@ -6,4 +6,6 @@
 #include <array>
 #include <memory>
 
-void benchmark(Algorithm* algorithm, int iterationCount, int threadCount, std::ostream& output);
+CSVEntry benchmark(Algorithm* algorithm);
+
+void benchmarkAndWriteMany(Algorithm* algorithm, std::ostream& file, int iterationCount, int threadCount, int size, int visionRadius, int leaderCount);

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-template <class T> std::ostream& operator<<(std::ostream& out, std::optional<T> const& opt)
+template <class T> static ostream& operator<<(ostream& out, optional<T> const& opt)
 {
     if (opt.has_value())
         out << opt.value();
@@ -12,11 +12,19 @@ template <class T> std::ostream& operator<<(std::ostream& out, std::optional<T> 
 
 void writeHeader(ostream& file)
 {
-    file << "name, time, threadCount, birdCount, obstacleCount, partitionCount, partitionOverload\n";
+    file << "name, time, threadCount, birdCount, obstacleCount, leaderCount, visionRadius, size, partitionCount, "
+            "partitionOverload\n";
 }
 
 void writeEntry(ostream& file, CSVEntry const& entry)
 {
-    file << entry.methodName << ", " << entry.time.count() << ", " << entry.threadCount << ", " << entry.birdCount << ", " << entry.obstacleCount
+    file << entry.methodName << ", " << entry.time.count() << ", " << entry.threadCount << ", " << entry.birdCount
+         << ", " << entry.obstacleCount << ", " << entry.leaderCount << ", " << entry.visionRadius << ", " << entry.size
          << ", " << entry.partitionCount << ", " << entry.partitionOverload << "\n";
+}
+
+ostream& operator<<(ostream& file, CSVEntry const& entry)
+{
+    writeEntry(file, entry);
+    return file;
 }

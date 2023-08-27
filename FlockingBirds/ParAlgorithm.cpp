@@ -9,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <numeric>
+#include <omp.h>
 #include <random>
 #include <ranges>
 #include <tuple>
@@ -149,21 +150,27 @@ void ParAlgorithm::update()
     vector<Vec> forcePerBird;
     forcePerBird.resize(birds.size());
 
+    omp_set_num_threads(partitions.size());
 #pragma omp parallel for
-    for (int i = 0; i < birds.size(); i++)
+    for (int i = 0; i < partitions.size(); i++)
     {
-        auto& bird = birds[i];
-        Vec& currentForce = forcePerBird[i];
-        currentForce += bird.calculateLeaderAttraction(leaderVals);
+        auto& [partitionBirds, min, max] = partitions[i];
+        for (int i = 0; i < partitionBirds.size(); i++)
+        {
+            Bird& bird = *partitionBirds[i];
+            // honestly, it's not nice, but I think it maybe is even defined behavior
+            Vec& currentForce = forcePerBird[partitionBirds[i] - birds.begin().base()];
+            currentForce += bird.calculateLeaderAttraction(leaderVals);
 
-        auto neighbours = neighboursOf(&bird);
-        if (neighbours.size() == 0)
-            continue;
+            auto neighbours = neighboursOf(&bird);
+            if (neighbours.size() == 0)
+                continue;
 
-        currentForce += bird.calculateCohesionPull(neighbours);
-        currentForce += bird.calculateAlignment(neighbours);
-        currentForce += bird.calculateSeparationPushBack(neighbours);
-        currentForce += bird.calculateCollisionPushBack(obstacles);
+            currentForce += bird.calculateCohesionPull(neighbours);
+            currentForce += bird.calculateAlignment(neighbours);
+            currentForce += bird.calculateSeparationPushBack(neighbours);
+            currentForce += bird.calculateCollisionPushBack(obstacles);
+        }
     }
 
     for (int i = 0; i < leaders.size(); i++)
@@ -173,7 +180,6 @@ void ParAlgorithm::update()
         if ((leader->position - goal).length() < leaderNearGoal)
             generateGoal(i);
 
-        // honestly, it's not nice, but I think it maybe is even defined behavior
         forcePerBird[leader - birds.begin().base()] += leader->calculateGoalAttraction(goal);
     }
 
