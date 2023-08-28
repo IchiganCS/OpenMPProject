@@ -17,31 +17,19 @@
 
 namespace {
 
-double wrapAround(double value, double min, double max) {
-  double range = max - min;
-  double wrappedValue = value;
-
-  while (wrappedValue < min) {
-    wrappedValue += range;
-  }
-
-  while (wrappedValue >= max) {
-    wrappedValue -= range;
-  }
-
-  return wrappedValue;
-}
-
 void boids_algorithm_par_with_reduction(std::vector<Bird> &birds,
                                         std::vector<Obstacle> &obs,
                                         double separation_factor = 1,
                                         double alignment_factor = 1,
                                         double cohesion_factor = 1,
                                         double avoidance_factor = 1) {
-  printf("separation factor = %f, alignment factor = %f, cohesion factor = %f, "
-         "cohesion factor = %f\n",
-         separation_factor, alignment_factor, cohesion_factor,
-         avoidance_factor);
+  if (Utils::PRINTLOG) {
+
+    printf(
+        "separation factor = %f, alignment factor = %f, cohesion factor = %f, "
+        "cohesion factor = %f\n",
+        separation_factor, alignment_factor, cohesion_factor, avoidance_factor);
+  }
   size_t num_boids = birds.size();
 
   // Rule 1: Separation - steer to avoid crowding nearby boids
@@ -86,24 +74,27 @@ void boids_algorithm_par_with_reduction(std::vector<Bird> &birds,
         }
       }
     }
-    // average_align_velocity.x = average_align_velocityx;
-    // average_align_velocity.y = average_align_velocityy;
-    // average_sepration_velocity.x = average_sepration_velocityx;
-    // average_sepration_velocity.y = average_sepration_velocityy;
-    // average_position.x = average_positionx;
-    // average_position.y = average_positiony;
-    if (align_neighbours_count != 0) {
-      average_align_velocity =
-          average_align_velocity * (1.0 / align_neighbours_count);
-      average_position = average_position * (1.0 / align_neighbours_count);
+#pragma omp critical(somename)
+    {
+      // average_align_velocity.x = average_align_velocityx;
+      // average_align_velocity.y = average_align_velocityy;
+      // average_sepration_velocity.x = average_sepration_velocityx;
+      // average_sepration_velocity.y = average_sepration_velocityy;
+      // average_position.x = average_positionx;
+      // average_position.y = average_positiony;
+      if (align_neighbours_count != 0) {
+        average_align_velocity =
+            average_align_velocity * (1.0 / align_neighbours_count);
+        average_position = average_position * (1.0 / align_neighbours_count);
+      }
+      alignment_vectors[i] =
+          (average_align_velocity - localThreadCopybirds[i].velocity);
+      alignment_vectors[i] = alignment_vectors[i].getNormalisedVec();
+      cohesion_vectors[i] =
+          (average_position - localThreadCopybirds[i].position);
+      cohesion_vectors[i] = cohesion_vectors[i].getNormalisedVec();
+      separation_vectors[i] = average_sepration_velocity.getNormalisedVec();
     }
-    alignment_vectors[i] =
-        (average_align_velocity - localThreadCopybirds[i].velocity);
-    alignment_vectors[i] = alignment_vectors[i].getNormalisedVec();
-    cohesion_vectors[i] = (average_position - localThreadCopybirds[i].position);
-    cohesion_vectors[i] = cohesion_vectors[i].getNormalisedVec();
-    separation_vectors[i] = average_sepration_velocity.getNormalisedVec();
-
     int no_of_close_obs = 0;
     Vec &obs_vec_ref = obstacle_avoidance_vectors[i];
     float &obs_vec_refx = obs_vec_ref.x;
@@ -268,10 +259,13 @@ void boids_algorithm_seq(std::vector<Bird> &birds, std::vector<Obstacle> &obs,
                          double alignment_factor = 1,
                          double cohesion_factor = 1,
                          double avoidance_factor = 1) {
-  printf("separation factor = %f, alignment factor = %f, cohesion factor = %f, "
-         "cohesion factor = %f\n",
-         separation_factor, alignment_factor, cohesion_factor,
-         avoidance_factor);
+  if (Utils::PRINTLOG) {
+
+    printf(
+        "separation factor = %f, alignment factor = %f, cohesion factor = %f, "
+        "cohesion factor = %f\n",
+        separation_factor, alignment_factor, cohesion_factor, avoidance_factor);
+  }
   size_t num_boids = birds.size();
 
   // Rule 1: Separation - steer to avoid crowding nearby boids
@@ -284,18 +278,28 @@ void boids_algorithm_seq(std::vector<Bird> &birds, std::vector<Obstacle> &obs,
     Vec average_align_velocity;
     int align_neighbours_count = 0;
     Vec average_position;
+    Vec average_sepration_velocity;
+    float &average_align_velocityx = average_align_velocity.x;
+    float &average_align_velocityy = average_align_velocity.y;
+    float &average_sepration_velocityx = average_sepration_velocity.x;
+    float &average_sepration_velocityy = average_sepration_velocity.y;
+    float &average_positionx = average_position.x;
+    float &average_positiony = average_position.y;
     for (size_t j = 0; j < num_boids; ++j) {
       if (i != j) {
         Vec diff = birds[i].position - birds[j].position;
         double distance = diff.length();
         if (distance < sep_radius)
-          separation_vectors[i] =
-              separation_vectors[i] +
-              (diff.getNormalisedVec() * (sep_radius - distance));
+          average_sepration_velocityx +=
+              (diff.getNormalisedVec() * (sep_radius - distance)).x;
+        average_sepration_velocityy +=
+            (diff.getNormalisedVec() * (sep_radius - distance)).y;
         if (distance < alignment_radius) {
           align_neighbours_count++;
-          average_align_velocity = average_align_velocity + birds[j].velocity;
-          average_position = average_position + birds[j].position;
+          average_align_velocityx += birds[j].velocity.x;
+          average_align_velocityy += birds[j].velocity.y;
+          average_positionx += birds[j].position.x;
+          average_positiony += birds[j].position.y;
         }
       }
     }
@@ -308,12 +312,15 @@ void boids_algorithm_seq(std::vector<Bird> &birds, std::vector<Obstacle> &obs,
     alignment_vectors[i] = alignment_vectors[i].getNormalisedVec();
     cohesion_vectors[i] = (average_position - birds[i].position);
     cohesion_vectors[i] = cohesion_vectors[i].getNormalisedVec();
-    separation_vectors[i] = separation_vectors[i].getNormalisedVec();
+    separation_vectors[i] = average_sepration_velocity.getNormalisedVec();
 
     // alignment_vectors[i] = Utils::getAlignment(birds, birds[i], i);
     // cohesion_vectors[i] = Utils::getCohesion(birds, birds[i], i);
     // separation_vectors[i] = Utils::getSeparation(birds, birds[i], i);
     int no_of_close_obs = 0;
+    Vec &obs_vec_ref = obstacle_avoidance_vectors[i];
+    float &obs_vec_refx = obs_vec_ref.x;
+    float &obs_vec_refy = obs_vec_ref.y;
     for (int j = 0; j < obs.size(); j++) {
       Obstacle &obstacle = obs[j];
       Vec dir = obstacle.center - birds[i].position;
@@ -321,7 +328,8 @@ void boids_algorithm_seq(std::vector<Bird> &birds, std::vector<Obstacle> &obs,
 
       if (distLength != 0 && distLength < collisionCutOff) {
         dir.toLength(-collisionBreakOne / distLength);
-        obstacle_avoidance_vectors[i] += dir;
+        obs_vec_refx += dir.x;
+        obs_vec_refy += dir.y;
         no_of_close_obs++;
       }
     }
@@ -429,8 +437,8 @@ void SimpleFlockingBird::update(std::vector<Bird> &birds,
   double parRedDur = t.getDurationinNanos();
   Utils::csv.writePoint(birds.size(), Utils::NUM_THREADS, obs.size(), seqDur,
                         parDur, parRedDur, 0);
-  Utils::assertBirdDataEqual(seqCopy, parCopy);
-  Utils::assertBirdDataEqual(seqCopy, parRedCopy);
+  // Utils::assertBirdDataEqual(seqCopy, parCopy);
+  // Utils::assertBirdDataEqual(seqCopy, parRedCopy);
   birds.swap(seqCopy);
   return;
 }

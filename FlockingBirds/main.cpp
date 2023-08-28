@@ -1,3 +1,5 @@
+#include "ParallelForAlgo.h"
+#include "ParallelForAlgoWithRed.h"
 #include "SimpleFlockingBird.h"
 #include "Utils.h"
 #include "src/Draw.h"
@@ -29,7 +31,7 @@
 // #endif
 //   Utils::NUM_THREADS = omp_get_max_threads();
 
-//   Utils::csv.writePoint(0, 0, 0, 0, 0, 0);
+//   Utils::csv.writePoint(0, 0, 0, 0, 0, 0, 0);
 // #ifndef EXCLUDESDL
 
 //   int w, h;
@@ -38,18 +40,24 @@
 //   Utils::WINDOW_HEIGHT = 0.8 * dm.h;
 //   Utils::WINDOW_WIDTH = 0.8 * dm.w;
 // #endif
-//   SimpleFlockingBird algo;
+//   SimpleFlockingBird simpleFlockingBird;
+//   ParallelForAlgo parallelForAlgo;
+//   ParallelForAlgoWithRed parallelForAlgoWithRed;
 //   std::vector<Bird> birds;
 //   std::vector<Obstacle> obstacles;
 // #ifndef EXCLUDESDL
 
 //   initDrawing(Utils::WINDOW_HEIGHT);
 // #endif
-//   Utils::intialiseInitPostion(birds, 1);
-//   Utils::intialiseInitObstacles(obstacles, 1);
+//   Utils::intialiseInitPostion(birds, 100);
+//   Utils::intialiseInitObstacles(obstacles, 5);
 
 //   std::cout << "Running" << std::endl;
-//   Simulation s(&algo, birds, obstacles);
+//   // Simulation s(&simpleFlockingBird, birds, obstacles);
+//   Simulation s(&simpleFlockingBird, &parallelForAlgo,
+//   &parallelForAlgoWithRed,
+//                birds, obstacles);
+
 //   s.simulate();
 // #ifndef EXCLUDESDL
 
@@ -59,6 +67,7 @@
 // }
 
 int main() {
+  Utils::PRINTLOG = false;
   Utils::csv.writePoint(0, 0, 0, 0, 0, 0, 0);
   int maxThreads = omp_get_max_threads();
   std::vector<Bird> birds;
@@ -67,14 +76,22 @@ int main() {
   int MaxObs = 100;
   int maxIterations = 10;
   SimpleFlockingBird algo;
-  for (int noOfThreads = 8; noOfThreads <= maxThreads; noOfThreads++) {
-    for (int noOfBirds = 0; noOfBirds <= maxBird; noOfBirds += 10) {
-      for (int noOfOBS = 0; noOfOBS <= MaxObs; noOfOBS += 10) {
+  float total = maxThreads * (maxBird / 10) * (MaxObs / 10) * maxIterations;
+  int count = 0;
+  for (int noOfThreads = 1; noOfThreads <= maxThreads; noOfThreads++) {
+    for (int noOfBirds = 1; noOfBirds <= maxBird; noOfBirds += 10) {
+      for (int noOfOBS = 1; noOfOBS <= MaxObs; noOfOBS += 10) {
         Utils::NUM_THREADS = noOfThreads;
         Utils::intialiseInitPostion(birds, noOfBirds);
         Utils::intialiseInitObstacles(obstacles, noOfOBS);
-        for (int noOfIterations = 0; noOfIterations < maxIterations;
+        for (int noOfIterations = 1; noOfIterations <= maxIterations;
              noOfIterations++) {
+          count++;
+          // assert(count == noOfThreads * noOfBirds * noOfOBS *
+          // noOfIterations);
+          std::cout << "Test No: " << count << " of total: " << int(total)
+                    << " done. Percent: " << ((count / total) * 100.0f)
+                    << "%\n";
           algo.update(birds, obstacles);
         }
       }

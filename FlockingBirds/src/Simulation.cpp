@@ -8,8 +8,8 @@
 #include <string>
 
 int count = 0;
-
 void Simulation::simulate() {
+  // unsigned int turn = 0;
   bool running = true;
 #ifndef EXCLUDESDL
   SDL_Event e;
@@ -66,13 +66,13 @@ void Simulation::simulate() {
           break;
         }
         case SDLK_g: {
-          if (Birds.size() < 1000)
-            Birds.push_back(Utils::getBird());
+          if (Birds1.size() < 1000)
+            Birds1.push_back(Utils::getBird());
           break;
         }
         case SDLK_b: {
-          if (Birds.size() > 1)
-            Birds.pop_back();
+          if (Birds1.size() > 1)
+            Birds1.pop_back();
           break;
         }
         case SDLK_h: {
@@ -102,19 +102,35 @@ void Simulation::simulate() {
     }
 #endif
     if (running) {
-      algo->update(Birds, obstacles);
+      algo1->update(Birds1, obstacles);
+      // algo2->update(Birds2, obstacles);
+      // algo3->update(Birds3, obstacles);
 #ifndef EXCLUDESDL
-
-      drawOnlyBirds(Birds, obstacles);
+      Utils::assertBirdDataEqual(Birds1, Birds2);
+      Utils::assertBirdDataEqual(Birds1, Birds3);
+      if (turn == 0)
+        drawOnlyBirds(Birds1, obstacles, birdColor1, true);
+      if (turn == 1)
+        drawOnlyBirds(Birds2, obstacles, birdColor2, true);
+      if (turn == 2)
+        drawOnlyBirds(Birds3, obstacles, birdColor3, true);
       printf("FPS = %d\n", Utils::FPS);
       SDL_Delay((1000 / Utils::FPS));
+      turn++;
+      if (turn > 2)
+        turn = 0;
 #endif
     }
   }
 }
-
-Simulation::Simulation(Algorithm *a, std::vector<Bird> &birds,
-                       std::vector<Obstacle> &o)
-    : Birds(birds), algo(a), obstacles(o) {
+Simulation::Simulation(Algorithm *a1, Algorithm *a2, Algorithm *a3,
+                       std::vector<Bird> &birds, std::vector<Obstacle> &o)
+    : Birds1(birds), Birds2(birds), Birds3(birds), algo1(a1), algo2(a2),
+      algo3(a3), obstacles(o) {
   ;
 }
+// Simulation::Simulation(Algorithm *a, std::vector<Bird> &birds,
+//                        std::vector<Obstacle> &o)
+//     : Birds1(birds), algo1(a), obstacles(o) {
+//   ;
+//}

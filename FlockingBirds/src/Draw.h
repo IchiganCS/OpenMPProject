@@ -17,6 +17,9 @@ const float partitionLineWidth = 2;
 const float birdSharpness = 3.141 / 3;
 const SDL_Color backgroundColor = {102, 204, 255, SDL_ALPHA_OPAQUE};
 const SDL_Color birdColor = {139, 129, 126, SDL_ALPHA_OPAQUE};
+const SDL_Color birdColor1 = {255, 0, 0, 255};
+const SDL_Color birdColor2 = {0, 255, 0, 60};
+const SDL_Color birdColor3 = {0, 0, 255, 5};
 const SDL_Color leaderColor = {0, 0, 0, SDL_ALPHA_OPAQUE};
 const SDL_Color goalColor = {255, 0, 0, SDL_ALPHA_OPAQUE};
 const SDL_Color partitionLineColor = {0, 0, 0, SDL_ALPHA_OPAQUE};
@@ -25,6 +28,8 @@ const SDL_Color obstacleColor = {255, 255, 255, SDL_ALPHA_OPAQUE};
 void initDrawing(int size);
 
 void drawOnlyBirds(const std::vector<Bird> &birds,
-                   std::vector<Obstacle> &obstacles);
+                   std::vector<Obstacle> &obstacles,
+                   const SDL_Color &color = birdColor,
+                   bool drawWithAngle = true);
 #endif
 #endif

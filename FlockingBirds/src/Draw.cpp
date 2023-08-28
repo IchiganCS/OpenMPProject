@@ -2,7 +2,7 @@
 #include "Draw.h"
 #ifndef EXCLUDESDL
 #include "Obstacle.h"
-#include "utils/Utils.h"
+#include "Utils.h"
 
 #include <SDL.h>
 #include <SDL_pixels.h>
@@ -207,12 +207,13 @@ static void drawGoal(const Vec &position) {
 }
 
 void drawOnlyBirds(const std::vector<Bird> &birds,
-                   std::vector<Obstacle> &obstacles) {
+                   std::vector<Obstacle> &obstacles, const SDL_Color &color,
+                   bool drawWithAngle) {
 
   SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g,
                          backgroundColor.b, backgroundColor.a);
   SDL_RenderClear(renderer);
-  drawBirds(birds);
+  drawBirds(birds, color, drawWithAngle);
   // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
   for (Obstacle &obstacle : obstacles)
