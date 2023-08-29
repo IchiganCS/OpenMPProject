@@ -8,4 +8,4 @@
 
 CSVEntry benchmark(Algorithm* algorithm);
 
-void benchmarkAndWriteMany(Algorithm* algorithm, std::ostream& file, int iterationCount, int threadCount, int size, int visionRadius, int leaderCount);
+void benchmarkAndWriteMany(Algorithm* algorithm, std::ostream& file, int iterationCount, int size, int visionRadius, int leaderCount);

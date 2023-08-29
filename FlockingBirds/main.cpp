@@ -67,61 +67,62 @@ void benchmarkAll()
     std::vector<int> threadCounts = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 24};
     std::vector<float> partitionOverloads = {0.1f, 0.3f};
 
-    for (auto threadCount : threadCounts)
-    {
-        omp_set_num_threads(threadCount);
+    for (auto birdCount : birdCounts)
+        for (auto size : sizes)
+            for (auto radius : radiuses)
+                for (auto leaderCount : leaderCounts)
+                    for (auto obstacleCount : obstacleCounts)
+                    {
+                        auto [birds, obstacles] = ranGen(size, birdCount, obstacleCount);
 
-        for (auto birdCount : birdCounts)
-            for (auto size : sizes)
-                for (auto radius : radiuses)
-                    for (auto leaderCount : leaderCounts)
-                        for (auto obstacleCount : obstacleCounts)
+                        SimpleAlgorithm alg(birds, obstacles, leaderCount, size, radius);
+                        benchmarkAndWriteMany(&alg, file, 1000, size, radius, leaderCount);
+
+                        for (auto threadCount : threadCounts)
                         {
-                            auto [birds, obstacles] = ranGen(size, birdCount, obstacleCount);
-
-                            SimpleAlgorithm alg(birds, obstacles);
-                            benchmarkAndWriteMany(&alg, file, 1000, threadCount, size, radius, leaderCount);
-
-                            for (auto partitionCount : partitionCounts)
-                                for (auto partitionOverload : partitionOverloads)
-                                {
-                                    ParAlgorithm alg(birds, obstacles, leaderCount, size, size, radius, partitionCount,
-                                                     partitionOverload);
-                                    benchmarkAndWriteMany(&alg, file, 1000, threadCount, size, radius, leaderCount);
-                                }
+                            for (auto partitionOverload : partitionOverloads)
+                            {
+                                ParAlgorithm alg(birds, obstacles, leaderCount, size, radius, threadCount,
+                                                 partitionOverload);
+                                benchmarkAndWriteMany(&alg, file, 1000, size, radius, leaderCount);
+                            }
                         }
-    }
+                    }
 
     file.close();
 }
 
 int main(int argc, char** argv)
 {
-    std::cout << omp_get_max_threads() << std::endl;
+    bool benchmark = false;
 
-    //benchmarkAll();
-    return 0;
-
-    const int size = 1500;
-    initDrawing(size);
-    auto [birds, obstacles] = ranGen(size, 1000, 30);
-
-    ParAlgorithm alg(birds, obstacles, 3, size, size, 300, 5, 0.1f);
-
-    SDL_Event e;
-    bool quit = false;
-    while (!quit)
+    if (benchmark)
     {
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_QUIT)
-                quit = true;
-        }
-        // SDL_Delay(100);
-        alg.update();
-        drawParallel(alg.drawingInformation());
+        benchmarkAll();
+        return 0;
     }
+    else {
+        const int size = 1500;
+        initDrawing(size);
+        auto [birds, obstacles] = ranGen(size, 1000, 30);
 
-    SDL_Quit();
-    return 0;
+        ParAlgorithm alg(birds, obstacles, 3, size, 300, 5, 0.1f);
+
+        SDL_Event e;
+        bool quit = false;
+        while (!quit)
+        {
+            while (SDL_PollEvent(&e))
+            {
+                if (e.type == SDL_QUIT)
+                    quit = true;
+            }
+            // SDL_Delay(100);
+            alg.update();
+            drawParallel(alg.drawingInformation());
+        }
+
+        SDL_Quit();
+        return 0;
+    }
 }

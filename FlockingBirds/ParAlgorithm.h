@@ -11,9 +11,6 @@
 class ParAlgorithm : public Algorithm
 {
   private:
-    const int width;
-    const int height;
-    const float visionRadius;
     const float partitionOverloadTolerance;
     const int partitionMaxElements;
 
@@ -33,21 +30,11 @@ class ParAlgorithm : public Algorithm
     /// a maximal x for which it is responsible.
     std::vector<std::tuple<std::vector<Bird*>, float, float>> partitions;
 
-    /// Holds all birds. The vector itself may not be modified and the sorting to be maintained, only the elements may
-    /// be changed.
-    std::vector<Bird> birds;
-
-    std::vector<Obstacle> obstacles;
-
-    std::vector<std::pair<Bird*, Vec>> leaders;
-
-    /// Generates a new goal for the leader.
-    void generateGoal(int i);
 
     /// Calculates the neighbors of a given bird and optimizes the search by checking if there could be a match for a
     /// given partition. If not, the partition and all its birds are skipped. The returned vector does not include the
     /// argument.
-    std::vector<Bird> neighboursOf(const Bird* bird) const;
+    virtual std::pair<std::vector<Bird>, std::vector<Obstacle>> objectsInVision(const Bird& bird) const;
 
   public:
     ParAlgorithm() = delete;
@@ -57,7 +44,7 @@ class ParAlgorithm : public Algorithm
     /// PartitionOverloadTolerance is a value in percent, e.g. 0.1f means that each partition may hold up
     /// to 10% more birds than what is optimal.
     ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount,
-                 int width, int height, float visionRadius, int partitionCount, float partitionOverloadTolerance);
+                 int size, float visionRadius, int partitionCount, float partitionOverloadTolerance);
 
     struct DrawingInformation
     {

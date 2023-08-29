@@ -7,12 +7,11 @@
 
 class SimpleAlgorithm : public Algorithm
 {
-  private:
-    std::vector<Bird> birds;
-    std::vector<Obstacle> obstacles;
   public:
-    SimpleAlgorithm(std::vector<Bird> const& birds, std::vector<Obstacle> const& obs);
+    SimpleAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles, int leaderCount,
+                    int size, float visionRadius);
     virtual ~SimpleAlgorithm() = default;
+
     virtual void update();
     virtual void fillCSV(CSVEntry& entry);
 };

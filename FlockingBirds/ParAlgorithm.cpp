@@ -19,53 +19,23 @@
 using namespace std;
 
 static constexpr float leaderNearGoal = 13;
-static constexpr float goalGenerationRetries = 10;
 
 ParAlgorithm::ParAlgorithm(const std::vector<Bird>& initialBirds, const std::vector<Obstacle>& obstacles,
-                           int leaderCount, int width, int height, float visionRadius, int partitionCount,
+                           int leaderCount, int size, float visionRadius, int partitionCount,
                            float partitionOverloadTolerance)
-    : width(width), height(height), visionRadius(visionRadius), birds(initialBirds), obstacles(obstacles),
-      partitionMaxElements((1 + partitionOverloadTolerance) * initialBirds.size() / partitionCount),
+    : Algorithm(initialBirds, obstacles, leaderCount, size, visionRadius), partitionMaxElements((1 + partitionOverloadTolerance) * initialBirds.size() / partitionCount),
       partitionOverloadTolerance(partitionOverloadTolerance)
 {
-    leaders.resize(leaderCount);
-    for (int i = 0; i < leaderCount; i++)
-    {
-        leaders[i].first = &birds[i];
-        generateGoal(i);
-    }
-
     partitions.resize(partitionCount);
     repartition();
 }
 
-void ParAlgorithm::generateGoal(int i)
-{
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_real_distribution<> widthGen(width / 5.0f * 1, width / 5.0f * 3);
-    std::uniform_real_distribution<> heightGen(height / 5.0f * 1, height / 5.0f * 3);
-
-    for (int i = 0; i < goalGenerationRetries; i++)
-    {
-        leaders[i].second.x = widthGen(rng);
-        leaders[i].second.y = heightGen(rng);
-
-        bool tooClose = false;
-        for (auto& obs : obstacles)
-            if (obs.distanceTo(leaders[i].second) < 50)
-                tooClose = true;
-
-        if (!tooClose)
-            return;
-    }
-}
 
 void ParAlgorithm::repartition()
 {
     // make a copy of birds which will be sorted by the x-coordinate
     // the second pair entry stores the index in the birds-vector
-    vector<pair<Bird*, int>> sorted;
+    vector<pair<const Bird*, int>> sorted;
     sorted.reserve(birds.size());
     for (int i = 0; i < birds.size(); i++)
         sorted.push_back(make_pair(&birds[i], i));
@@ -107,27 +77,36 @@ void ParAlgorithm::repartitionIfOverloaded()
     }
 }
 
-vector<Bird> ParAlgorithm::neighboursOf(const Bird* bird) const
+std::pair<std::vector<Bird>, std::vector<Obstacle>> ParAlgorithm::objectsInVision(const Bird& bird) const
 {
     // calculate neighbouring partitions in radius vision
     vector<int> partitionIndices;
     for (int i = 0; i < partitions.size(); i++)
     {
-        if (bird->position.x + visionRadius > get<1>(partitions[i]) &&
-            bird->position.x - visionRadius < get<2>(partitions[i]))
+        if (bird.position.x + visionRadius > get<1>(partitions[i]) &&
+            bird.position.x - visionRadius < get<2>(partitions[i]))
             partitionIndices.push_back(i);
     }
 
     vector<Bird> res;
+
     for (auto partIdx : partitionIndices)
     {
         for (auto& other : get<0>(partitions[partIdx]))
-            if (other != bird && other->position.distanceTo(bird->position) < visionRadius)
+            if (other != &bird && other->position.distanceTo(bird.position) < visionRadius)
                 res.push_back(*other);
     }
 
-    return res;
+    vector<Obstacle> obs;
+    for (auto& obstacle : obstacles)
+    {
+        if (obstacle.distanceTo(bird.position) < visionRadius)
+            obs.push_back(obstacle);
+    }
+
+    return {res, obs};
 }
+
 
 void ParAlgorithm::reassignPartition(Bird* bird)
 {
@@ -150,26 +129,25 @@ void ParAlgorithm::update()
     vector<Vec> forcePerBird;
     forcePerBird.resize(birds.size());
 
-    omp_set_num_threads(partitions.size());
-#pragma omp parallel for
+#pragma omp parallel for num_threads(partitions.size())
     for (int i = 0; i < partitions.size(); i++)
     {
         auto& [partitionBirds, min, max] = partitions[i];
         for (int i = 0; i < partitionBirds.size(); i++)
         {
-            Bird& bird = *partitionBirds[i];
+            auto& bird = *partitionBirds[i];
             // honestly, it's not nice, but I think it maybe is even defined behavior
             Vec& currentForce = forcePerBird[partitionBirds[i] - birds.begin().base()];
             currentForce += bird.calculateLeaderAttraction(leaderVals);
 
-            auto neighbours = neighboursOf(&bird);
+            auto [neighbours, seenObstacles] = objectsInVision(bird);
             if (neighbours.size() == 0)
                 continue;
 
             currentForce += bird.calculateCohesionPull(neighbours);
             currentForce += bird.calculateAlignment(neighbours);
             currentForce += bird.calculateSeparationPushBack(neighbours);
-            currentForce += bird.calculateCollisionPushBack(obstacles);
+            currentForce += bird.calculateCollisionPushBack(seenObstacles);
         }
     }
 
@@ -187,11 +165,13 @@ void ParAlgorithm::update()
     {
         for (int i = 0; i < partBirds.size(); i++)
         {
-            Bird* bird = partBirds[i];
+            auto bird = partBirds[i];
             Vec& currentForce = forcePerBird[bird - birds.begin().base()];
-            bird->applyForce(currentForce);
-            bird->applyVelocity();
-            currentForce = {0, 0};
+            if (currentForce.length() > 0) {
+                bird->applyForce(currentForce);
+                bird->applyVelocity();
+                currentForce = {0, 0};
+            }
 
             if (bird->position.x < min || bird->position.x > max)
             {
@@ -241,6 +221,6 @@ void ParAlgorithm::fillCSV(CSVEntry& entry)
     entry.methodName = "parallel";
     entry.birdCount = birds.size();
     entry.obstacleCount = obstacles.size();
-    entry.partitionCount = partitions.size();
+    entry.threadCount = partitions.size();
     entry.partitionOverload = partitionOverloadTolerance;
 }

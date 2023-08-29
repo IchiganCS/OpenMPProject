@@ -12,7 +12,7 @@ template <class T> static ostream& operator<<(ostream& out, optional<T> const& o
 
 void writeHeader(ostream& file)
 {
-    file << "name, time, threadCount, birdCount, obstacleCount, leaderCount, visionRadius, size, partitionCount, "
+    file << "name, time, threadCount, birdCount, obstacleCount, leaderCount, visionRadius, size, "
             "partitionOverload\n";
 }
 
@@ -20,7 +20,7 @@ void writeEntry(ostream& file, CSVEntry const& entry)
 {
     file << entry.methodName << ", " << entry.time.count() << ", " << entry.threadCount << ", " << entry.birdCount
          << ", " << entry.obstacleCount << ", " << entry.leaderCount << ", " << entry.visionRadius << ", " << entry.size
-         << ", " << entry.partitionCount << ", " << entry.partitionOverload << "\n";
+         << ", " << entry.partitionOverload << "\n";
 }
 
 ostream& operator<<(ostream& file, CSVEntry const& entry)

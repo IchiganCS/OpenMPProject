@@ -7,32 +7,24 @@
 
 using namespace std;
 
-constexpr float alignmentRadius = 200;
-constexpr float separationRadius = 40;
 constexpr float maxSpeed = 3.0f;
 constexpr float minSpeed = 1.5f;
+constexpr float maxForce = 30.0f;
 constexpr float goalAttractionBreakOne = 70.0f;
 constexpr float collisionBreakOne = 300;
-constexpr float collisionCutOff = 500;
 constexpr float leaderAttractionScale = 0.025;
 constexpr float separationScale = 5;
 constexpr float alignmentScale = 1.5;
 constexpr float cohesionScale = 1.0;
-constexpr float overallForceScale = 0.01;
+constexpr float overallForceScale = 0.02;
 
-Vec Bird::calculateAlignment(const std::vector<Bird>& neighbors) const
+Vec Bird::calculateAlignment(const vector<Bird>& neighbors) const
 {
     Vec average_align_velocity;
     int align_neighbours_count = 0;
     for (size_t j = 0; j < neighbors.size(); ++j)
     {
-        if (*this == neighbors[j])
-            continue;
-
         Vec diff = position - neighbors[j].position;
-        if (diff.length() > alignmentRadius)
-            continue;
-
         align_neighbours_count++;
         average_align_velocity += neighbors[j].velocity;
     }
@@ -44,28 +36,22 @@ Vec Bird::calculateAlignment(const std::vector<Bird>& neighbors) const
     return (average_align_velocity - velocity).normalized() * alignmentScale;
 }
 
-Vec Bird::calculateSeparationPushBack(const std::vector<Bird>& neighbors) const
+Vec Bird::calculateSeparationPushBack(const vector<Bird>& neighbors) const
 {
     Vec sep_vec;
-    int align_neighbours_count = 0;
     for (size_t j = 0; j < neighbors.size(); ++j)
     {
-        if (*this == neighbors[j])
-            continue;
-
         Vec diff = position - neighbors[j].position;
         double distance = diff.length();
 
-        if (distance > separationRadius)
-            continue;
 
-        sep_vec += diff.normalized() * (separationRadius - distance);
+        sep_vec += diff.normalized() * (distance);
     }
 
     return sep_vec.normalized() * separationScale;
 }
 
-Vec Bird::calculateCohesionPull(const std::vector<Bird>& neighbors) const
+Vec Bird::calculateCohesionPull(const vector<Bird>& neighbors) const
 {
 
     Vec average_position;
@@ -77,8 +63,6 @@ Vec Bird::calculateCohesionPull(const std::vector<Bird>& neighbors) const
             continue;
 
         Vec diff = position - neighbors[j].position;
-        if (diff.length() > alignmentRadius)
-            continue;
 
         align_neighbours_count++;
         average_position = average_position + neighbors[j].position;
@@ -92,13 +76,13 @@ Vec Bird::calculateCohesionPull(const std::vector<Bird>& neighbors) const
     return (average_position - position).normalized() * cohesionScale;
 }
 
-Vec Bird::calculateCollisionPushBack(const std::vector<Obstacle>& obstacles) const
+Vec Bird::calculateCollisionPushBack(const vector<Obstacle>& obstacles) const
 {
     Vec accum;
     for (auto& obs : obstacles)
     {
         float dist = obs.distanceTo(position);
-        if (dist > collisionCutOff || dist == 0)
+        if (dist == 0)
             continue;
 
         Vec diff = obs.center - position;
@@ -109,7 +93,7 @@ Vec Bird::calculateCollisionPushBack(const std::vector<Obstacle>& obstacles) con
 
     return accum;
 }
-Vec Bird::calculateLeaderAttraction(const std::vector<Bird>& leaders) const
+Vec Bird::calculateLeaderAttraction(const vector<Bird>& leaders) const
 {
     auto nearest = ranges::min_element(leaders, {}, [this](auto& b) { return (b.position - position).length(); });
     Vec diff = nearest->position - position;
@@ -125,7 +109,9 @@ Vec Bird::calculateGoalAttraction(const Vec& goal) const
 
 void Bird::applyForce(const Vec& force)
 {
-    velocity += force * overallForceScale;
+    Vec adjusted = force;
+    adjusted.limitLength(maxForce);
+    velocity += adjusted * overallForceScale;
     velocity.limitLength(maxSpeed);
     if (velocity.length() < minSpeed)
         velocity.toLength(minSpeed);
