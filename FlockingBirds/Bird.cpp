@@ -10,13 +10,17 @@ using namespace std;
 constexpr float maxSpeed = 3.0f;
 constexpr float minSpeed = 1.5f;
 constexpr float maxForce = 30.0f;
-constexpr float goalAttractionBreakOne = 70.0f;
-constexpr float collisionBreakOne = 300;
-constexpr float leaderAttractionScale = 0.025;
-constexpr float separationScale = 5;
+constexpr float goalAttractionBreakOne = 100.0f;
+constexpr float collisionBreakOne = 400;
+constexpr float collisionLinear = 4;
+constexpr float collisionRadiusBreakOne = 30;
+constexpr float collisionMax = 400;
+constexpr float leaderAttractionScale = 0.09;
+constexpr float separationBreakOne = 10;
 constexpr float alignmentScale = 1.5;
 constexpr float cohesionScale = 1.0;
 constexpr float overallForceScale = 0.02;
+constexpr float keepForceScale = 0.7;
 
 Vec Bird::calculateAlignment(const vector<Bird>& neighbors) const
 {
@@ -38,17 +42,15 @@ Vec Bird::calculateAlignment(const vector<Bird>& neighbors) const
 
 Vec Bird::calculateSeparationPushBack(const vector<Bird>& neighbors) const
 {
-    Vec sep_vec;
+    Vec accum;
     for (size_t j = 0; j < neighbors.size(); ++j)
     {
         Vec diff = position - neighbors[j].position;
-        double distance = diff.length();
-
-
-        sep_vec += diff.normalized() * (distance);
+        Vec seperation = diff.normalized() * separationBreakOne / diff.length();
+        accum += seperation;
     }
 
-    return sep_vec.normalized() * separationScale;
+    return accum;
 }
 
 Vec Bird::calculateCohesionPull(const vector<Bird>& neighbors) const
@@ -84,12 +86,19 @@ Vec Bird::calculateCollisionPushBack(const vector<Obstacle>& obstacles) const
         float dist = obs.distanceTo(position);
         if (dist == 0)
             continue;
-
+        
         Vec diff = obs.center - position;
 
-        diff.toLength(-collisionBreakOne / dist);
-        accum += diff;
+        auto linear = diff;
+        linear = linear.normalized() * -collisionLinear;
+
+        auto square = diff;
+        square.toLength(-collisionBreakOne / dist);
+        accum += (square + linear) * obs.radius / collisionRadiusBreakOne;
+
     }
+
+    accum.limitLength(collisionMax);
 
     return accum;
 }
@@ -109,7 +118,7 @@ Vec Bird::calculateGoalAttraction(const Vec& goal) const
 
 void Bird::applyForce(const Vec& force)
 {
-    Vec adjusted = force;
+    Vec adjusted = force * keepForceScale;
     adjusted.limitLength(maxForce);
     velocity += adjusted * overallForceScale;
     velocity.limitLength(maxSpeed);

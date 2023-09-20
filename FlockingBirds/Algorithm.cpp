@@ -17,20 +17,20 @@ Algorithm::Algorithm(const std::vector<Bird>& initialBirds, const std::vector<Ob
     }
 }
 
-void Algorithm::generateGoal(int i)
+void Algorithm::generateGoal(int leaderIndex)
 {
     random_device dev;
     mt19937 rng(dev());
-    uniform_real_distribution<> sizeGen(size / 5.0f * 1, size / 5.0f * 3);
+    uniform_real_distribution<> sizeGen(size / 5.0f * 1, size / 5.0f * 4);
 
     for (int i = 0; i < goalGenerationRetries; i++)
     {
-        leaders[i].second.x = sizeGen(rng);
-        leaders[i].second.y = sizeGen(rng);
+        leaders[leaderIndex].second.x = sizeGen(rng);
+        leaders[leaderIndex].second.y = sizeGen(rng);
 
         bool tooClose = false;
         for (auto& obs : obstacles)
-            if (obs.distanceTo(leaders[i].second) < 50)
+            if (obs.distanceTo(leaders[leaderIndex].second) < 40)
                 tooClose = true;
 
         if (!tooClose)

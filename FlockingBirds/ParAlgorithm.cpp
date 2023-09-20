@@ -130,24 +130,26 @@ void ParAlgorithm::update()
     forcePerBird.resize(birds.size());
 
 #pragma omp parallel for num_threads(partitions.size())
-    for (int i = 0; i < partitions.size(); i++)
+    for (int j = 0; j < partitions.size(); j++)
     {
-        auto& [partitionBirds, min, max] = partitions[i];
+        auto& [partitionBirds, min, max] = partitions[j];
         for (int i = 0; i < partitionBirds.size(); i++)
         {
-            auto& bird = *partitionBirds[i];
+            Bird& bird = *partitionBirds[i];
             // honestly, it's not nice, but I think it maybe is even defined behavior
             Vec& currentForce = forcePerBird[partitionBirds[i] - birds.begin().base()];
             currentForce += bird.calculateLeaderAttraction(leaderVals);
 
             auto [neighbours, seenObstacles] = objectsInVision(bird);
+
+            currentForce += bird.calculateCollisionPushBack(seenObstacles);
+
             if (neighbours.size() == 0)
                 continue;
 
             currentForce += bird.calculateCohesionPull(neighbours);
             currentForce += bird.calculateAlignment(neighbours);
             currentForce += bird.calculateSeparationPushBack(neighbours);
-            currentForce += bird.calculateCollisionPushBack(seenObstacles);
         }
     }
 
