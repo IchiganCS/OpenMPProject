@@ -60,7 +60,7 @@ std::chrono::microseconds measure(matrix<DIM> (*func)(const matrix<DIM> &, const
                                   const matrix<DIM> &left, const matrix<DIM> &right)
 {
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 5; i++)
         volatile auto _ = func(left, right); // disable discard
     auto end = std::chrono::high_resolution_clock::now();
 

@@ -60,5 +60,5 @@ void SimpleAlgorithm::fillCSV(CSVEntry& entry)
     entry.birdCount = birds.size();
     entry.obstacleCount = obstacles.size();
     entry.partitionOverload = {};
-    entry.threadCount = {};
+    entry.threadCount = 1;
 }

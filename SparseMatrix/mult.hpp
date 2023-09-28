@@ -114,11 +114,8 @@ template <unsigned DIM> matrix<DIM> multDenseOmpNaiveMutex(const matrix<DIM> &le
                 val += left.get(r, i) * right.get(i, c);
             }
 
-            if (val != 0)
-            {
-                const auto lock = std::lock_guard(resultMutex);
-                result.set(r, c, val);
-            }
+            const auto lock = std::lock_guard(resultMutex);
+            result.set(r, c, val);
         }
     }
 
@@ -132,7 +129,6 @@ template <unsigned DIM>
 matrix<DIM> multSparseOmpNaiveConditionalCritical(const matrix<DIM> &left, const matrix<DIM> &right)
 {
     matrix<DIM> result;
-    std::mutex resultMutex;
 
 #pragma omp parallel for
     for (int r = 0; r < DIM; r++)

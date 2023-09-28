@@ -24,20 +24,16 @@ constexpr float keepForceScale = 0.7;
 
 Vec Bird::calculateAlignment(const vector<Bird>& neighbors) const
 {
-    Vec average_align_velocity;
-    int align_neighbours_count = 0;
-    for (size_t j = 0; j < neighbors.size(); ++j)
-    {
-        Vec diff = position - neighbors[j].position;
-        align_neighbours_count++;
-        average_align_velocity += neighbors[j].velocity;
-    }
-
-    if (align_neighbours_count == 0)
+    if (neighbors.empty())
         return {0, 0};
 
-    average_align_velocity = average_align_velocity / align_neighbours_count;
-    return (average_align_velocity - velocity).normalized() * alignmentScale;
+    Vec neighborVelocity;
+    for (size_t j = 0; j < neighbors.size(); ++j)
+        neighborVelocity += neighbors[j].velocity;
+
+    neighborVelocity = neighborVelocity / neighbors.size();
+
+    return (neighborVelocity - velocity).normalized() * alignmentScale;
 }
 
 Vec Bird::calculateSeparationPushBack(const vector<Bird>& neighbors) const
@@ -56,26 +52,15 @@ Vec Bird::calculateSeparationPushBack(const vector<Bird>& neighbors) const
 Vec Bird::calculateCohesionPull(const vector<Bird>& neighbors) const
 {
 
-    Vec average_position;
-    int align_neighbours_count = 0;
+    Vec averagePosition;
+    if (neighbors.empty())
+        return {0, 0};
 
     for (size_t j = 0; j < neighbors.size(); ++j)
-    {
-        if (neighbors[j] == *this)
-            continue;
+        averagePosition = averagePosition + neighbors[j].position;
 
-        Vec diff = position - neighbors[j].position;
-
-        align_neighbours_count++;
-        average_position = average_position + neighbors[j].position;
-    }
-
-    if (align_neighbours_count == 0)
-        return {0, 0};
-        
-
-    average_position = average_position / align_neighbours_count;
-    return (average_position - position).normalized() * cohesionScale;
+    averagePosition = averagePosition / neighbors.size();
+    return (averagePosition - position).normalized() * cohesionScale;
 }
 
 Vec Bird::calculateCollisionPushBack(const vector<Obstacle>& obstacles) const
@@ -86,7 +71,7 @@ Vec Bird::calculateCollisionPushBack(const vector<Obstacle>& obstacles) const
         float dist = obs.distanceTo(position);
         if (dist == 0)
             continue;
-        
+
         Vec diff = obs.center - position;
 
         auto linear = diff;
@@ -95,7 +80,6 @@ Vec Bird::calculateCollisionPushBack(const vector<Obstacle>& obstacles) const
         auto square = diff;
         square.toLength(-collisionBreakOne / dist);
         accum += (square + linear) * obs.radius / collisionRadiusBreakOne;
-
     }
 
     accum.limitLength(collisionMax);

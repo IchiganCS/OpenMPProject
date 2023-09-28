@@ -15,7 +15,7 @@ struct CSVEntry {
     int visionRadius;
     int leaderCount;
 
-    std::optional<int> threadCount;
+    int threadCount;
     std::optional<float> partitionOverload;
 };
 

@@ -2,8 +2,8 @@
 #define MATRIX
 
 #include <array>
-#include <exception>
 #include <span>
+#include <string>
 #include <utility> //pair
 #include <vector>
 
@@ -31,11 +31,11 @@ template <unsigned DIM> class sparseRowMatrix
     /// Sets a value at the given coordinates to 0.
     void reset(unsigned row, unsigned column)
     {
-        auto currentColumn = rowValues(row);
+        auto currentRow = rowValues(row);
 
-        for (int i = 0; i < currentColumn.size(); i++)
+        for (int i = 0; i < currentRow.size(); i++)
         {
-            auto [val, col] = currentColumn[i];
+            auto [val, col] = currentRow[i];
 
             if (column == col)
             {
@@ -70,8 +70,6 @@ template <unsigned DIM> class sparseRowMatrix
             return;
         }
 
-        auto currentColumn = rowValues(row);
-
         // inserts the value at the offset i for the current row.
         auto insertAt = [&](unsigned i) {
             // insert at correct position and adjust row separator
@@ -81,14 +79,16 @@ template <unsigned DIM> class sparseRowMatrix
                 rowSeparators[i]++;
         };
 
+        auto currentRow = rowValues(row);
+
         // iterate through the column to keep sorting
-        for (int i = 0; i < currentColumn.size(); i++)
+        for (int i = 0; i < currentRow.size(); i++)
         {
-            auto [val, col] = currentColumn[i];
+            auto [val, col] = currentRow[i];
 
             if (col == column)
             {
-                currentColumn[i] = std::pair(value, column);
+                currentRow[i] = std::pair(value, column);
                 return;
             }
             if (column > col)
@@ -106,7 +106,7 @@ template <unsigned DIM> class sparseRowMatrix
     int get(unsigned row, unsigned column) const
     {
 
-        for (auto &[val, col] : cRowValues(row))
+        for (auto& [val, col] : cRowValues(row))
         {
             if (column == col)
                 return val;
@@ -117,26 +117,23 @@ template <unsigned DIM> class sparseRowMatrix
         return 0;
     }
 
-    size_t nonZeros() {
+    size_t nonZeros()
+    {
         return values.size();
     }
 };
 
-
-
-
 template <unsigned DIM> class coordinateListMatrix
 {
   private:
-
     /// Sorted first by rows and then by columns.
     std::vector<std::tuple<unsigned, unsigned, int>> values;
-
 
   public:
     int get(unsigned searchRow, unsigned searchColumn) const
     {
-        for (auto [row, col, val] : values) {
+        for (auto [row, col, val] : values)
+        {
             if (row < searchRow || col < searchColumn)
                 continue;
             if (col > searchColumn)
@@ -149,18 +146,20 @@ template <unsigned DIM> class coordinateListMatrix
         return 0;
     }
 
-
-    void set(unsigned setRow, unsigned setColumn, int newValue) {
-        for (int i = 0; i < values.size(); i++) {
+    void set(unsigned setRow, unsigned setColumn, int newValue)
+    {
+        for (int i = 0; i < values.size(); i++)
+        {
             auto& [row, col, val] = values[i];
             if (row < setRow || col < setColumn)
                 continue;
 
-
-            if (row == setRow && col == setColumn) {
+            if (row == setRow && col == setColumn)
+            {
                 // overwrite
 
-                if (newValue == 0) {
+                if (newValue == 0)
+                {
                     // actually delete it
                     values.erase(values.begin() + i);
                     return;
@@ -168,14 +167,15 @@ template <unsigned DIM> class coordinateListMatrix
 
                 std::get<2>(values[i]) = newValue;
             }
-            else {
+            else
+            {
                 // insert
 
                 if (newValue == 0)
                     // actually dont
                     return;
-                
-                values.insert(values.begin() + i, std::make_tuple(setRow, setColumn, newValue));                
+
+                values.insert(values.begin() + i, std::make_tuple(setRow, setColumn, newValue));
             }
             return;
         }
@@ -183,12 +183,40 @@ template <unsigned DIM> class coordinateListMatrix
         // if we reach this, values is empty
         values.push_back(std::make_tuple(setRow, setColumn, newValue));
     }
-    
-    size_t nonZeros() {
+
+    size_t nonZeros()
+    {
         return values.size();
     }
 };
 
-template <unsigned DIM> using matrix = sparseRowMatrix<DIM>;
+template <unsigned DIM> class arrayMatrix
+{
+  private:
+    int data[DIM][DIM];
+
+  public:
+    int get(unsigned row, unsigned col) const
+    {
+        return data[row][col];
+    }
+    void set(unsigned row, unsigned col, int val)
+    {
+        data[row][col] = val;
+    }
+    size_t nonZeros()
+    {
+        size_t count = 0;
+        for (int i = 0; i < DIM; i++)
+            for (int j = 0; j < DIM; j++)
+                if (data[i][j] != 0)
+                    count++;
+
+        return count;
+    }
+};
+
+template <unsigned DIM> using matrix = coordinateListMatrix<DIM>;
+const std::string matrixName = "coordinateList";
 
 #endif

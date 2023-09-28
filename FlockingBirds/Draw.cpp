@@ -52,13 +52,13 @@ static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdCo
                     position.y += birdSize / 2;
                     break;
                 case 1: {
-                    float aimAngle = -3.141592 / 180 * 30;
+                    float aimAngle = -numbers::pi / 180 * 30;
                     position.x += birdSize / 2 * cos(aimAngle);
                     position.y += birdSize / 2 * sin(aimAngle);
                     break;
                 }
                 case 2: {
-                    float aimAngle = -3.141592 / 180 * 150;
+                    float aimAngle = -numbers::pi / 180 * 150;
                     position.x += birdSize / 2 * cos(aimAngle);
                     position.y += birdSize / 2 * sin(aimAngle);
                     break;
@@ -72,13 +72,13 @@ static void drawBirds(const vector<Bird>& birds, const SDL_Color& color = birdCo
                     position.y += birdSize / 2 * sin(bird.angle);
                     break;
                 case 1: {
-                    float aimAngle = bird.angle + 3.141592 - birdSharpness / 2;
+                    float aimAngle = bird.angle + numbers::pi - birdSharpness / 2;
                     position.x += birdSize / 2 * cos(aimAngle);
                     position.y += birdSize / 2 * sin(aimAngle);
                     break;
                 }
                 case 2: {
-                    float aimAngle = bird.angle + 3.141592 + birdSharpness / 2;
+                    float aimAngle = bird.angle + numbers::pi + birdSharpness / 2;
                     position.x += birdSize / 2 * cos(aimAngle);
                     position.y += birdSize / 2 * sin(aimAngle);
                     break;

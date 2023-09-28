@@ -27,7 +27,7 @@ std::pair<std::vector<Bird>, std::vector<Obstacle>> ranGen(int size, int birdCou
     std::uniform_real_distribution<> pos(0, size);
     std::uniform_real_distribution<> radius(10, 50);
 
-    std::uniform_real_distribution<> angle(0, 2 * 3.141);
+    std::uniform_real_distribution<> angle(0, 2 * std::numbers::pi);
 
     for (int i = 0; i < birdCount; i++)
     {
@@ -54,18 +54,24 @@ std::pair<std::vector<Bird>, std::vector<Obstacle>> ranGen(int size, int birdCou
 void benchmarkAll()
 {
     std::ofstream file;
-    file.open("results.csv");
+    file.open("hardwareTest.csv");
 
     writeHeader(file);
 
-    std::vector<int> birdCounts = {200, 500, 1000};
-    std::vector<int> sizes = {300, 1000, 1500};
-    std::vector<int> radiuses = {10, 100};
-    std::vector<int> obstacleCounts = {10, 40};
+    // std::vector<int> birdCounts = {200, 500, 1000};
+    std::vector<int> birdCounts = {5000};
+    std::vector<int> sizes = {300 };
+    // std::vector<int> sizes = {300, 1000, 1500};
+    std::vector<int> radiuses = {100};
+    // std::vector<int> radiuses = {10, 100};
+    std::vector<int> obstacleCounts = { 40};
+    // std::vector<int> obstacleCounts = {10, 40};
     std::vector<int> leaderCounts = {3};
-    std::vector<int> partitionCounts = {5, 10};
-    std::vector<int> threadCounts = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 24};
-    std::vector<float> partitionOverloads = {0.1f, 0.3f};
+    // std::vector<int> threadCounts = {2, 20};
+    std::vector<int> threadCounts = { 16 };
+    // std::vector<int> threadCounts = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+    std::vector<float> partitionOverloads = {0.3f};
+    // std::vector<float> partitionOverloads = {0.1f, 0.3f, 0.6f, 0.8f, 1.0f};
 
     for (auto birdCount : birdCounts)
         for (auto size : sizes)
@@ -76,7 +82,7 @@ void benchmarkAll()
                         auto [birds, obstacles] = ranGen(size, birdCount, obstacleCount);
 
                         SimpleAlgorithm alg(birds, obstacles, leaderCount, size, radius);
-                        benchmarkAndWriteMany(&alg, file, 1000, size, radius, leaderCount);
+                        // benchmarkAndWriteMany(&alg, file, 500, size, radius, leaderCount);
 
                         for (auto threadCount : threadCounts)
                         {
@@ -84,7 +90,7 @@ void benchmarkAll()
                             {
                                 ParAlgorithm alg(birds, obstacles, leaderCount, size, radius, threadCount,
                                                  partitionOverload);
-                                benchmarkAndWriteMany(&alg, file, 1000, size, radius, leaderCount);
+                                benchmarkAndWriteMany(&alg, file, 50000, size, radius, leaderCount);
                             }
                         }
                     }
@@ -94,7 +100,7 @@ void benchmarkAll()
 
 int main(int argc, char** argv)
 {
-    bool benchmark = false;
+    bool benchmark = true;
 
     if (benchmark)
     {

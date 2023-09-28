@@ -13,6 +13,6 @@ add_executable(main
     main.cpp
 )
 
-target_compile_options(main PUBLIC -std=c++20 -Ofast)
+target_compile_options(main PUBLIC -std=c++20)
 target_include_directories(main PUBLIC .)
 target_link_libraries(main OpenMP::OpenMP_CXX)

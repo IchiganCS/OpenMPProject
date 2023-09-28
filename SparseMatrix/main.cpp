@@ -19,17 +19,26 @@ template <unsigned DIM> void benchmarkAll(ostream &csvFile, int threadCount)
     auto lowRight = randomMat<DIM>(lowChance);
 
     auto benchmarkOne = [&](const string &name, matrix<DIM> (*func)(const matrix<DIM> &, const matrix<DIM> &)) {
-        writeResult(csvFile, name, threadCount, DIM, highChance / 100.f, measure(func, highLeft, highRight));
-        writeResult(csvFile, name, threadCount, DIM, middleChance / 100.f, measure(func, middleLeft, middleRight));
-        writeResult(csvFile, name, threadCount, DIM, lowChance / 100.f, measure(func, lowLeft, lowRight));
+        writeResult(csvFile, matrixName, name, threadCount, DIM, highChance / 100.f, measure(func, highLeft, highRight));
+        cout << "Benchmarked high chance" << endl;
+        writeResult(csvFile, matrixName, name, threadCount, DIM, middleChance / 100.f, measure(func, middleLeft, middleRight));
+        cout << "Benchmarked middle chance" << endl;
+        writeResult(csvFile, matrixName, name, threadCount, DIM, lowChance / 100.f, measure(func, lowLeft, lowRight));
+        cout << "Benchmarked low chance" << endl;
     };
 
     benchmarkOne("sparse naive sequential", multSparseSeqNaive<DIM>);
+    cout << "Benchmarked " << "sparse naive sequential" << endl;
     benchmarkOne("dense naive sequential", multDenseSeqNaive<DIM>);
+    cout << "Benchmarked " << "dense naive sequential" << endl;
     benchmarkOne("sparse mutex OpenMP", multSparseOmpNaiveMutex<DIM>);
+    cout << "Benchmarked " << "sparse mutex OpenMP" << endl;
     benchmarkOne("dense mutex OpenMP", multDenseOmpNaiveMutex<DIM>);
+    cout << "Benchmarked " << "dense mutex OpenMP" << endl;
     benchmarkOne("sparse conditional-critical OpenMP", multSparseOmpNaiveConditionalCritical<DIM>);
+    cout << "Benchmarked " << "sparse conditional-critical OpenMP" << endl;
     benchmarkOne("sparse reduced-critical OpenMP", multSparseOmpNaiveReducedCritical<DIM>);
+    cout << "Benchmarked " << "sparse reduced-critical OpenMP" << endl;
 }
 
 int main()
@@ -60,12 +69,17 @@ int main()
 
     cout << "Benchmarking..." << endl;
 
-    for (int i = 2; i < 17; i++)
+    for (int i = 15; i < 25; i++)
     {
-        cout << "Iteration " << i << " finished." << endl;
         benchmarkAll<50>(csvFile, i);
+        cout << "Benchmarked dim 50." << endl;
         benchmarkAll<100>(csvFile, i);
+        cout << "Benchmarked dim 100." << endl;
         benchmarkAll<150>(csvFile, i);
+        cout << "Benchmarked dim 150." << endl;
+        benchmarkAll<200>(csvFile, i);
+        cout << "Benchmarked dim 200." << endl;
+        cout << "Iteration " << i << " finished." << endl;
     }
 
     cout << "Written results to " << csvName << "\n";
